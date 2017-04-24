@@ -15,9 +15,18 @@ The goals/steps I'll explain in depth are the following:
 [//]: # (Image References)
 
 [image1]: ./camera_cal_corners/calibration1_corners.jpg "Corner detection 1"
-[image2]: ./camera_cal_corners/calibration1_corners.jpg "Corner detection 2"
+[image2]: ./test_images/test0.jpg "Before"
+[image3]: ./test_images/undistorted0.jpg "After"
+[image4]: ./other_images/1.png "Processing1"
+[image5]: ./other_images/2.png "Processing2"
+[image6]: ./test_images/test0.jpg "Before"
+[image7]: ./test_images/transformed0.jpg "After"
+[image8]: ./test_images/test1.jpg "Before"
+[image9]: ./test_images/detected1.jpg "After"
+[image10]: ./other_images/comparison.png "Comparison"
 
-#[image1]: ./examples/undistort_output.png "Undistorted"
+
+
 
 
 ### Files and project navigation 
@@ -35,6 +44,8 @@ More specifically, I started by preparing "object poinnts" which are the 3D (x,y
 
 ![alt text][image1]
 ![alt text][image2]
+![alt text][image3]
+
 
 ### Creating a thresholded binary image
 I did exploratory analysis to compare the effectiveness of various techniques. For each technique, I tried various kernels and thresholds. They included:
@@ -48,7 +59,8 @@ Ultimately, I found that using a combination of the the HLS threshold and magnit
 
 After applying these filters, I also utilized a filter/window to remove the area of the image where lane lines wouldn't be. 
 
-
+![alt text][image4]
+![alt text][image5]
 
 ### Perspective transform
 
@@ -62,6 +74,9 @@ dst = np.float32([(200, 720), (1080, 720), (200, 0), (1080, 0)])
 ```
 I then verified that the perspective transformation was working by drawing the source and destination points on a test image and its warped transformation, and ensuring the lines were parallel (left and right lane lines should always be parallel). 
 
+![alt text][image6]
+![alt text][image7]
+
 ### Identifying lane line pixels and fitting a polynomial
 
 I started by creating a historgram for the buttom half of the transformed image and found the midpoint of the lane by taking the average of the two peaks. 
@@ -70,6 +85,9 @@ Then I utilized a sliding window approach to determine the location of the lanes
 
 Once I had the windows and lane centers, I use the `np.polyfit` function to draw two second-order polynomials on the image to indicate the lane lines. 
 
+![alt text][image8]
+![alt text][image9]
+
 
 ### Radius of curvature and lane position relative to car 
 
@@ -77,9 +95,13 @@ The radius of curvature is the radius of a circle that touches a curve at a give
 
 To calculate the lane position relative to the car I compared the center of the image (center of the car) to the midpoint between the left lane and right lane intersections with the bottom of the image. 
 
+
+
 ### Final image after undoing the transformation 
 
 To undue the transform I used the `warpPerspective` function again but used the source and image points parameters in reverse order. After that I used the `fillPoly` function to color the are in between the lane lines in green. 
+
+![alt text][image10]
 
 ### Video pipeline
 I created a separate file to process the video, called `process_video.py`. Here I used the moviepy library to read the video, edit it using the process function I defined, and save it. 
