@@ -14,13 +14,11 @@ The goals/steps I'll explain in depth are the following:
 
 [//]: # (Image References)
 
-[image1]: ./examples/undistort_output.png "Undistorted"
-[image2]: ./test_images/test1.jpg "Road Transformed"
-[image3]: ./examples/binary_combo_example.jpg "Binary Example"
-[image4]: ./examples/warped_straight_lines.jpg "Warp Example"
-[image5]: ./examples/color_fit_lines.jpg "Fit Visual"
-[image6]: ./examples/example_output.jpg "Output"
-[video1]: ./project_video.mp4 "Video"
+[image1]: ./camera_cal_corners/calibration1_corners.jpg "Corner detection 1"
+[image2]: ./camera_cal_corners/calibration1_corners.jpg "Corner detection 2"
+
+#[image1]: ./examples/undistort_output.png "Undistorted"
+
 
 ### Files and project navigation 
 The project includes the following files:
@@ -35,6 +33,9 @@ To do the camera calibration, I used a common technique where you compare images
 
 More specifically, I started by preparing "object poinnts" which are the 3D (x,y,z) coordinates of the chessboard corners in the real world (z=0) and compare these with "image points" which I can detect using the `findChessboardCorners` function. Then, once I got the calibration and distortion coefficients, I used the the `cv2.undistort()` function to correct the test images and got the following results: 
 
+![alt text][image1]
+![alt text][image2]
+
 ### Creating a thresholded binary image
 I did exploratory analysis to compare the effectiveness of various techniques. For each technique, I tried various kernels and thresholds. They included:
 * absolute sobel threshold (in X and Y directions)
@@ -46,6 +47,8 @@ I did exploratory analysis to compare the effectiveness of various techniques. F
 Ultimately, I found that using a combination of the the HLS threshold and magnitude threshold works the best.
 
 After applying these filters, I also utilized a filter/window to remove the area of the image where lane lines wouldn't be. 
+
+
 
 ### Perspective transform
 
