@@ -85,10 +85,10 @@ def hls_thresh(image, channel="h", thresh=(0, 50)):
 
 def filterf(image):
 	height, width = image.shape[0], image.shape[1]
-	bl = (width / 2 - 450, height - 50)
-	br = (width / 2 + 450, height - 50)
-	tl = (width / 2 - 50, height / 2 + 85)
-	tr = (width / 2 + 50, height / 2 + 85)
+	bl = (width / 2 - 480, height - 30)
+	br = (width / 2 + 480, height - 30)
+	tl = (width / 2 - 60, height / 2 + 60)
+	tr = (width / 2 + 60, height / 2 + 60)
 
 	fit_left = np.polyfit((bl[0], tl[0]), (bl[1], tl[1]), 1)
 	fit_right = np.polyfit((br[0], tr[0]), (br[1], tr[1]), 1)
@@ -112,10 +112,10 @@ def filterf(image):
 #exploratory research
 def exploratory():
 	#read image
-	image = plt.imread('./test_images/undistorted5.jpg')
+	image = plt.imread('./test_images/undistorted7.jpg')
 
 	#processing functions
-	abs_sobel_thresh_1 = abs_sobel_thresh(image, orient='x', sobel_kernel = 25, thresh= (30,100))
+	abs_sobel_thresh_1 = abs_sobel_thresh(image, orient='x', sobel_kernel = 15, thresh= (20,100))
 	mag_thresh_1 = mag_thresh(image, sobel_kernel = 3,thresh= (60,100))
 	dir_thresh_1 = dir_thresh(image, sobel_kernel = 9, thresh= (-np.pi/4,np.pi/4))
 	rgb_thresh_1 = rgb_thresh(image, channel="r", thresh=(0,100))
