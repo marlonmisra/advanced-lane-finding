@@ -58,7 +58,7 @@ for undist in undistorted:
 	#combine thresholds
 	combined = np.zeros_like(undist[:,:,0])
 	combined[hls_thresh_1 == 1] = 1
-	combined[mag_thresh_1 == 1] = 1
+	combined[abs_sobel_thresh_1 == 1] = 1
 
 	#window
 	windowed = filterf(combined)
@@ -201,7 +201,14 @@ for trans, image in zip(transformed, images):
     # Combine the result with the original image
 	result = cv2.addWeighted(image, 1, newwarp, 0.3, 0)
 
+	#text
+	font = cv2.FONT_HERSHEY_SIMPLEX
+	curvature_string = "Radius of Curvature: " + str(int(radi[0])) + ", " + str(int(radi[1]))
+	location_string = "Vehicle Distance from Center: " + str(offset)
 
+	#add text to image
+	cv2.putText(result,curvature_string,(400,50), font, 1,(255,255,255),2,cv2.LINE_AA)
+	cv2.putText(result,location_string,(400,100), font, 1,(255,255,255),2,cv2.LINE_AA)
 
 	f, (ax1, ax2) = plt.subplots(1,2, figsize=(15,15))
 	f.tight_layout
@@ -212,20 +219,14 @@ for trans, image in zip(transformed, images):
 	ax1.set_ylim(720, 0)
 	ax1.plot(left_fitx, ploty, color='yellow')
 	ax1.plot(right_fitx, ploty, color='yellow')
-	ax1.invert_yaxis()
-	ax1.text(400, 600, curvature_string, color='white')
-	ax1.text(400, 650, location_string, color='white')
 
 	ax2.imshow(result)
 	ax2.set_title('Full lane identification', fontsize=12)
 
 	plt.show()
 
-	break
 
-	#write
-	#write_name = './test_images/detected'+str(idx)+'.jpg'
-	#cv2.imwrite(write_name, out_img)
+
 
 
 

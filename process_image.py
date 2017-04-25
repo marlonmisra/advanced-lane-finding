@@ -45,7 +45,7 @@ def process(undist):
 	#combine thresholds
 	combined = np.zeros_like(undist[:,:,0])
 	combined[hls_thresh_1 == 1] = 1
-	combined[mag_thresh_1 == 1] = 1
+	combined[abs_sobel_thresh_1 == 1] = 1
 
 	#apply filter
 	proc = filterf(combined)
@@ -145,7 +145,6 @@ def find_lanes(image, trans, Minv):
 	out_img[nonzeroy[left_lane_indices], nonzerox[left_lane_indices]] = [255, 0, 0]
 	out_img[nonzeroy[right_lane_indices], nonzerox[right_lane_indices]] = [0, 0, 255]
 	
-	
 	#curvature radius
 	y_eval = np.max(trans[0])
 	left_curverad = ((1 + (2*left_fit[0]*y_eval + left_fit[1])**2)**1.5) / np.absolute(2*left_fit[0])
@@ -170,15 +169,20 @@ def find_lanes(image, trans, Minv):
     # Combine the result with the original image
 	result = cv2.addWeighted(image, 1, newwarp, 0.3, 0)
 
+	#text
+	font = cv2.FONT_HERSHEY_SIMPLEX
+	curvature_string = "Radius of Curvature: " + str(int(radi[0])) + ", " + str(int(radi[1]))
+	location_string = "Vehicle Distance from Center: " + str(offset)
+
+	#add text to image
+	cv2.putText(result,curvature_string,(400,50), font, 1,(255,255,255),2,cv2.LINE_AA)
+	cv2.putText(result,location_string,(400,100), font, 1,(255,255,255),2,cv2.LINE_AA)
+
 	return out_img, result, left_fitx, right_fitx, ploty, radi, offset
 
 def plot(out_img, result, left_fitx, right_fitx, ploty, radi, offset):
 	f, (ax1, ax2) = plt.subplots(1,2, figsize=(15,15))
 	f.tight_layout
-
-	curvature_string = "Radius of Curvature: " + str(int(radi[0])) + ", " + str(int(radi[1]))
-	location_string = "Vehicle Dist. from Center: " + str(offset)
-
 
 	ax1.imshow(out_img)
 	ax1.set_title('Polynomial on lane lines', fontsize=12)
@@ -186,14 +190,11 @@ def plot(out_img, result, left_fitx, right_fitx, ploty, radi, offset):
 	ax1.set_ylim(720, 0)
 	ax1.plot(left_fitx, ploty, color='yellow')
 	ax1.plot(right_fitx, ploty, color='yellow')
-	ax1.invert_yaxis()
-	ax1.text(400, 600, curvature_string, color='white')
-	ax1.text(400, 650, location_string, color='white')
 
-	#ax2.imshow(result)
+	ax2.imshow(result)
 	ax2.set_title('Full lane identification', fontsize=12)
 
-	#plt.show()
+	plt.show()
 
 
 #--------------------------------------------------------------------
@@ -206,9 +207,9 @@ def process_image(image):
 	#plot(out_img, result, left_fitx, right_fitx, ploty, radi, offset)
 	return result
 
-a = process_image(sample_images[0])
-plt.imshow(a)
-plt.show()
+
+
+
 
 
 

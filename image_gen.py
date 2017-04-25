@@ -112,7 +112,7 @@ def filterf(image):
 #exploratory research
 def exploratory():
 	#read image
-	image = plt.imread('./test_images/undistorted0.jpg')
+	image = plt.imread('./test_images/undistorted5.jpg')
 
 	#processing functions
 	abs_sobel_thresh_1 = abs_sobel_thresh(image, orient='x', sobel_kernel = 25, thresh= (30,100))
@@ -125,7 +125,7 @@ def exploratory():
 	#combined threshold function
 	combined = np.zeros_like(image[:,:,0])
 	combined[hls_thresh_1 == 1] = 1
-	combined[mag_thresh_1 == 1] = 1
+	combined[abs_sobel_thresh_1 == 1] = 1
 
 	#window
 	windowed = filterf(combined)
@@ -161,7 +161,7 @@ def exploratory():
 	plt.subplots_adjust(left=0., right=1, top=0.9, bottom=0.)
 	plt.show()
 
-exploratory()
+#exploratory()
 
 
 
