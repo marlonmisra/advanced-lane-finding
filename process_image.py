@@ -146,14 +146,22 @@ def find_lanes(image, trans, Minv):
 	out_img[nonzeroy[right_lane_indices], nonzerox[right_lane_indices]] = [0, 0, 255]
 	
 	#curvature radius
-	y_eval = np.max(trans[0])
-	left_curverad = ((1 + (2*left_fit[0]*y_eval + left_fit[1])**2)**1.5) / np.absolute(2*left_fit[0])
-	right_curverad = ((1 + (2*right_fit[0]*y_eval + right_fit[1])**2)**1.5) / np.absolute(2*right_fit[0])
+	y_eval = np.max(ploty)
+	ym_per_pix = 30./720 # meters per pixel in y dimension
+	xm_per_pix = 3.7/700 # meteres per pixel in x dimension
+
+	left_fit_cr = np.polyfit(ploty*ym_per_pix, left_fitx*xm_per_pix, 2)
+	right_fit_cr = np.polyfit(ploty*ym_per_pix, right_fitx*xm_per_pix, 2)
+
+	left_curverad = ((1 + (2*left_fit_cr[0]*y_eval + left_fit_cr[1])**2)**1.5) / np.absolute(2*left_fit_cr[0])
+	right_curverad = ((1 + (2*right_fit_cr[0]*y_eval + right_fit_cr[1])**2)**1.5) / np.absolute(2*right_fit_cr[0])
+
 	radi = [left_curverad, right_curverad]
+
 	
 	#position from center
 	pos = trans.shape[1]/2
-	offset = abs(pos - (leftx_base + rightx_base)/2)
+	offset = (abs(pos - (leftx_base + rightx_base)/2))*xm_per_pix
 
 	#unwarp
 	warp_zero = np.zeros_like(trans).astype(np.uint8)
@@ -171,8 +179,8 @@ def find_lanes(image, trans, Minv):
 
 	#text
 	font = cv2.FONT_HERSHEY_SIMPLEX
-	curvature_string = "Radius of Curvature: " + str(int(radi[0])) + ", " + str(int(radi[1]))
-	location_string = "Vehicle Distance from Center: " + str(offset)
+	curvature_string = "Radius of Curvature: " + str(int(radi[0])) + " m, " + str(int(radi[1])) + " m"
+	location_string = "Vehicle Distance from Center: " + str(offset) + " m"
 
 	#add text to image
 	cv2.putText(result,curvature_string,(400,50), font, 1,(255,255,255),2,cv2.LINE_AA)
@@ -206,8 +214,6 @@ def process_image(image):
 	out_img, result, left_fitx, right_fitx, ploty, radi, offset = find_lanes(image, trans, Minv)
 	#plot(out_img, result, left_fitx, right_fitx, ploty, radi, offset)
 	return result
-
-
 
 
 
