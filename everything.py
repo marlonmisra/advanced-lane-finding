@@ -9,7 +9,7 @@ from image_gen import *
 
 
 #--------------------------------------------------------------------
-#ORIGINALS
+#ORIGINALSs
 
 originals = glob.glob('./test_images/test*.jpg')
 
