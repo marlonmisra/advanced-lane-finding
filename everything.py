@@ -23,7 +23,7 @@ for original in originals:
 
 
 #--------------------------------------------------------------------
-#UNDISTORTING
+#UNDISTORT
 
 #calibration values
 calibration = pickle.load( open("calibration.p", "rb") )
