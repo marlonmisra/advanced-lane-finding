@@ -69,11 +69,11 @@ def dir_thresh(image, sobel_kernel=3, thresh=(0, np.pi/2)):
 
 def rgb_thresh(image, channel="r", thresh=(0, 1)):
     if channel=="r":
-        threshold_channel = image[:,:,0] * 255
+        threshold_channel = image[:,:,0]
     if channel=="g":
-        threshold_channel = image[:,:,1] * 255
+        threshold_channel = image[:,:,1]
     if channel=="b":
-        threshold_channel = image[:,:,2] * 255
+        threshold_channel = image[:,:,2]
 
     rgb_threshold = np.zeros_like(threshold_channel)
     rgb_threshold[(threshold_channel > thresh[0]) & (threshold_channel < thresh[1])] = 1
@@ -83,15 +83,43 @@ def hls_thresh(image, channel="h", thresh=(0, 50)):
     hls = cv2.cvtColor(image, cv2.COLOR_RGB2HLS)
 
     if channel=="h":
-        threshold_channel = hls[:,:,0] * 255
+        threshold_channel = hls[:,:,0]
     if channel=="l":
-        threshold_channel = hls[:,:,1] * 255
+        threshold_channel = hls[:,:,1]
     if channel=="s":
-        threshold_channel = hls[:,:,2] * 255
+        threshold_channel = hls[:,:,2]
 
     hls_threshold = np.zeros_like(threshold_channel)
     hls_threshold[(threshold_channel > thresh[0]) & (threshold_channel < thresh[1])] = 1
     return hls_threshold
+
+def hsv_thresh(image, channel="h", thresh=(0, 50)):
+    hsv = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
+
+    if channel=="h":
+        threshold_channel = hsv[:,:,0]
+    if channel=="s":
+        threshold_channel = hsv[:,:,1]
+    if channel=="v":
+        threshold_channel = hsv[:,:,2]
+
+    hsv_threshold = np.zeros_like(threshold_channel)
+    hsv_threshold[(threshold_channel > thresh[0]) & (threshold_channel < thresh[1])] = 1
+    return hsv_threshold
+
+def YCrCb_thresh(image, channel="Y", thresh=(0, 50)):
+    YCrCb = cv2.cvtColor(image, cv2.COLOR_RGB2YCrCb)
+
+    if channel=="Y":
+        threshold_channel = YCrCb[:,:,0]
+    if channel=="Cr":
+        threshold_channel = YCrCb[:,:,1]
+    if channel=="Cb":
+        threshold_channel = YCrCb[:,:,2]
+
+    YCrCb_threshold = np.zeros_like(threshold_channel)
+    YCrCb_threshold[(threshold_channel > thresh[0]) & (threshold_channel < thresh[1])] = 1
+    return YCrCb_threshold
 
 def combine_threshs(hls_thresh_1, abs_sobel_thresh_1):
 	combined = np.zeros_like(hls_thresh_1)
@@ -103,8 +131,8 @@ def filterf(image):
 	height, width = image.shape[0], image.shape[1]
 	bl = (width / 2 - 480, height - 30)
 	br = (width / 2 + 480, height - 30)
-	tl = (width / 2 - 60, height / 2 + 60)
-	tr = (width / 2 + 60, height / 2 + 60)
+	tl = (width / 2 - 60, height / 2 + 76)
+	tr = (width / 2 + 60, height / 2 + 76)
 
 	fit_left = np.polyfit((bl[0], tl[0]), (bl[1], tl[1]), 1)
 	fit_right = np.polyfit((br[0], tr[0]), (br[1], tr[1]), 1)
@@ -118,8 +146,9 @@ def filterf(image):
            (ys > (xs * fit_top[0] + fit_top[1])) & \
            (ys < (xs * fit_bottom[0] + fit_bottom[1]))
 	
-	img_window = image
+	img_window = np.copy(image)
 	img_window[mask == False] = 0
+
 	return img_window
 
 def transform_image(windowed_image, M, img_size):
