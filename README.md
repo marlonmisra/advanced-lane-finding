@@ -15,24 +15,19 @@ The goals/steps I'll explain in depth are:
 
 [//]: # (Image References)
 
-[image1]: ./readme_assets/transformations.png "Transformations"
-[image2]: ./readme_assets/original_images.png "Original images"
+[image1]: ./readme_assets/original_images.png "Original images"
+[image2]: ./readme_assets/transformations.png "Transformations"
 [image3]: ./readme_assets/combined_images.png "Combined images"
 [image4]: ./readme_assets/windowed_images.png "Windowed images"
 [image5]: ./readme_assets/birdsview_images.png "Birdsview images"
 [image6]: ./readme_assets/lanes_images.png "Lanes images"
 [image7]: ./readme_assets/final_images.png "Final images"
-[image8]: ./readme_assets/calibration.png "Calibration"
 
 
-![alt text][image1]
-![alt text][image2]
-![alt text][image3]
-![alt text][image4]
-![alt text][image5]
-![alt text][image6]
-![alt text][image7]
-![alt text][image8]
+
+
+
+
 
 
 ### Files and project navigation 
@@ -52,6 +47,8 @@ More specifically, I started by preparing "object poinnts" which are the 3D (x,y
 
 
 ### Creating a thresholded binary image
+
+**Process**
 I did exploratory analysis to compare the effectiveness of various techniques. For each technique, I tried various kernels and thresholds. They included:
 * absolute sobel threshold (in X and Y directions)
 * magnitude sobel threshold
@@ -63,8 +60,22 @@ Ultimately, I found that using a combination of the the HLS threshold and magnit
 
 After applying these filters, I also utilized a filter/window to remove the area of the image where lane lines wouldn't be. 
 
+![alt text][image2]
 
-### Perspective transform
+
+**Original images**
+![alt text][image1]
+
+
+**Multi-threshold binary image**
+![alt text][image3]
+
+
+**Region of interest**
+![alt text][image4]
+
+
+**Perspective transform**
 
 The perspective transform changes the image such that you get a bird's eye view. This is important in order to determine lane curvature. 
 
@@ -76,6 +87,8 @@ dst = np.float32([(200, 720), (1080, 720), (200, 0), (1080, 0)])
 ```
 I then verified that the perspective transformation was working by drawing the source and destination points on a test image and its warped transformation, and ensuring the lines were parallel (left and right lane lines should always be parallel). 
 
+![alt text][image5]
+
 
 ### Identifying lane line pixels and fitting a polynomial
 
@@ -85,6 +98,7 @@ Then I utilized a sliding window approach to determine the location of the lanes
 
 Once I had the windows and lane centers, I use the `np.polyfit` function to draw two second-order polynomials on the image to indicate the lane lines. 
 
+![alt text][image6]
 
 
 ### Radius of curvature and lane position relative to car 
@@ -98,6 +112,9 @@ To calculate the lane position relative to the car I compared the center of the 
 ### Final image after undoing the transformation 
 
 To undue the transform I used the `warpPerspective` function again but used the source and image points parameters in reverse order. After that I used the `fillPoly` function to color the are in between the lane lines in green. 
+
+
+![alt text][image7]
 
 
 ### Video pipeline
