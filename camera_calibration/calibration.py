@@ -34,10 +34,10 @@ for idx, image_name in enumerate(image_names):
 			objpoints.append(objp)
 
 			#draw and display corners
-			#cv2.drawChessboardCorners(cal_img, (nx, ny), corners, ret)
-			#write_path = "./camera_cal_corners/calibration" + str(idx) + "_corners.jpg"
-			#cv2.imwrite(write_path, cal_img)
-			#print("Saved corners for image ", str(idx))
+			cv2.drawChessboardCorners(cal_img, (nx, ny), corners, ret)
+			write_path = "./camera_cal_corners/calibration" + str(idx) + "_corners.jpg"
+			cv2.imwrite(write_path, cal_img)
+			print("Saved corners for image ", str(idx))
 
 
 #load image for reference

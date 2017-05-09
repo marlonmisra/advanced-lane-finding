@@ -49,7 +49,28 @@ birds_view_images = [transform_image(windowed_image, M, img_size) for windowed_i
 #ALL TRANSFORMATIONS
 progress = [images, undistorted_images, abs_sobel_thresh_images, mag_thresh_images, dir_thresh_images, rgb_thresh_images, hls_thresh_images, hsv_thresh_images, YCrCb_images, combined_images, windowed_images, birds_view_images]
 
-#PLOT TRANSFORMATIONS
+
+#PLOT CALIBRATION
+def plot_calibration():
+	no_corners = plt.imread('camera_calibration/camera_cal/calibration10.jpg')
+	corners = plt.imread('camera_calibration/camera_cal_corners/calibration1_corners.jpg')
+	labels = ['No corners', 'Corners']
+	fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2, figsize = (10,4))
+	fig.tight_layout()
+	ax1.imshow(no_corners)
+	ax1.set_title(labels[0])
+	ax1.axis('off')
+	ax2.imshow(corners)
+	ax2.set_title(labels[1])
+	ax2.axis('off')
+	#plt.show()
+	plt.savefig('image.png', bbox_inches='tight', cmap='gray')
+
+#plot_calibration()
+
+
+
+#PLOT PROGRESS
 def plot_progress(progress, test_image_number):
 	labels = ['Original', 'Undistorted', 'Abs. Sobel Thresh.', 'Mag. Sobel Thresh.', 'Dir. Sobel Thresh.', 'RGB Thresh.', 'HLS Thresh.', 'HSV Thresh.', 'YCrCb Thresh', 'Combined', 'Windowed', 'Bird view']
 	fig, axes = plt.subplots(nrows=4, ncols=3, figsize = (15,10))
@@ -60,43 +81,45 @@ def plot_progress(progress, test_image_number):
 		ax.imshow(transformation[test_image_number], cmap='gray')
 		ax.set_title(label)
 		ax.axis('off')
-	plt.show()
+	#plt.show()
+	plt.savefig('image.png', bbox_inches='tight', cmap='gray')
+#plot_progress(progress, 0)
 
-plot_all(progress, 0)
 
-#PLOT LANE DETECTIONS
-def lane_detections(birds_view_images):
+#PLOT ALL
+def plot_all(images = [], birds_view_images = [], option = 'transformation'):
 	labels = ["Yellow and white", "Straight white", "Poor lighting", "Yellow and white curved", "Yellow and white curved 2", "Very poor lighting 1", "Very poor lighting 2", "Very poor lighting 3"]
 	fig, axes = plt.subplots(nrows=2, ncols=2, figsize = (10,6))
 	axes = axes.ravel()
 	fig.tight_layout()
-	for ax, birds_view_image, label in zip(axes, birds_view_images[:4], labels[:4]):
-		out_img, ploty, left_fit, left_fitx, leftx_base, right_fit, right_fitx, rightx_base = find_lanes(birds_view_image)
-		ax.imshow(out_img)
-		ax.set_title(label)
-		ax.plot(left_fitx, ploty, color='yellow')
-		ax.plot(right_fitx, ploty, color='yellow')
-		ax.axis('off')
 
-	plt.show()
-	#plt.savefig('image.png', bbox_inches='tight', cmap='gray')
-#lane_detections(birds_view_images)
+	if option == 'transformation':
+		for ax, image, label in zip(axes, images[:4], labels[:4]):
+			ax.imshow(image, cmap='gray')
+			ax.set_title(label)
+			ax.axis('off')
 
+	elif option == 'lanes':
+		for ax, birds_view_image, label in zip(axes, birds_view_images[:4], labels[:4]):
+			out_img, ploty, left_fit, left_fitx, leftx_base, right_fit, right_fitx, rightx_base = find_lanes(birds_view_image)
+			ax.imshow(out_img)
+			ax.set_title(label)
+			ax.plot(left_fitx, ploty, color='yellow')
+			ax.plot(right_fitx, ploty, color='yellow')
+			ax.axis('off')
 
-#PLOT FINAL IMAGE
-def plot_final_image(image, birds_view_image):
-	out_img, ploty, left_fit, left_fitx, leftx_base, right_fit, right_fitx, rightx_base = find_lanes(birds_view_image)
-	result = final_image(image, birds_view_image, ploty, leftx_base, left_fit, left_fitx, rightx_base, right_fit, right_fitx, Minv)
-	plt.imshow(result)
-	plt.show()
+	elif option == 'final':
+		for ax, image, birds_view_image,label in zip(axes, images, birds_view_images[:4], labels[:4]):
+			out_img, ploty, left_fit, left_fitx, leftx_base, right_fit, right_fitx, rightx_base = find_lanes(birds_view_image)
+			result = final_image(image, birds_view_image, ploty, leftx_base, left_fit, left_fitx, rightx_base, right_fit, right_fitx, Minv)
+			ax.imshow(result)
+			ax.set_title(label)
+			ax.axis('off')
+	#plt.show()
+	plt.savefig('readme_assets/image.png', bbox_inches='tight', cmap='gray')
 
-#plot_final_image(images[0], birds_view_images[0])
-
-
-
-
-
-
-
+#plot_all(images = birds_view_images, option = 'transformation') #plot transformations
+#plot_all(images = images, birds_view_images = birds_view_images, option = 'lanes') #plot lane lines images
+#plot_all(images = images, birds_view_images = birds_view_images, option = 'final') #plot final images
 
 

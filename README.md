@@ -1,50 +1,54 @@
 ## Advanced Lane Finding project
 ---
 ### Introduction 
-I previously worked on a project called Lane Finding (on my Github) where I tried to detect lane lines on a dashcam video feed and annotated the video to  indicate the location of those lane markings. In this project, the end goal is the same but I'll be using more advanced techniques to make the model better at handling different lighting and weather situations and more complex curved lanes. I'm also making other improvements like lens distortion correction and frame-by-frame smoothing. 
+I previously worked on 'lane-finding' (also on my Github) where I built a simple pipeline that detects lane lanes on front-facing car footage. The goal remains the same, but here I'm using more advanced techniques so that the model is more robust. Robust in this context means that the pipeline should in poorer lighting conditions, worse weather conditions, is agnostic to the color of the lane lines, and can understand not just linear lanes lines, but also curved lanes. 
 
-The goals/steps I'll explain in depth are the following:
-* Apply distortion correction to raw camera images to remove the effects that lenses have on images. 
-* Use a combination of color spaces/transforms, edge detections algos/convolutional techniques, and filters, to create a thresholded binary image that shows the lane lines as clearly as possible. 
-* Apply a perspective transform to get a rectified binary image (aka a "birds-eye view") to make it easier to determine lane curvature. 
-* Detect lane pixels to find the lane boundaries.
-* Determine the curvature of the lane and vehicle position with respect to center.
-* Warp the detected lane boundaries back onto the original image.
-* Output a visual display of the lane boundaries and numerical estimation of lane curvature and vehicle position.
+The goals/steps I'll explain in depth are: 
+* Applying distortion correction to raw camera images to remove the effects that lenses have on images. 
+* Exploring different color spaces, including RGB, HLS, HSV, and YCrCb, and choosing the combination that works best together.
+* Using more customizable gradient detection algorithms, including convolutional techniques like the Soble operator. 
+* Applying a perspective transform in order to get a birds-eye view of the lanes such that it's easier to determine lane curvature.
+* Detecting pixels that belong the lane using a convolutional technique. 
+* Using the location of the lane pixels to fit a polynomial that matches the curvature of the lane. 
+* Outputting the curvature of the lane and vehicle position with respect to center.
+* Warping the image back into the original space and visually identifying the lanes themselves, and the lane area in between. 
 
 [//]: # (Image References)
 
-[image1]: ./camera_cal_corners/calibration1_corners.jpg "Corner detection 1"
-[image2]: ./test_images/test0.jpg "Before"
-[image3]: ./test_images/undistorted0.jpg "After"
-[image4]: ./other_images/1.png "Processing1"
-[image5]: ./other_images/2.png "Processing2"
-[image6]: ./test_images/test0.jpg "Before"
-[image7]: ./test_images/transformed0.jpg "After"
-[image8]: ./test_images/test1.jpg "Before"
-[image9]: ./test_images/detected1.jpg "After"
-[image10]: ./other_images/comparison.png "Comparison"
+[image1]: ./readme_assets/transformations.png "Transformations"
+[image2]: ./readme_assets/original_images.png "Original images"
+[image3]: ./readme_assets/combined_images.png "Combined images"
+[image4]: ./readme_assets/windowed_images.png "Windowed images"
+[image5]: ./readme_assets/birdsview_images.png "Birdsview images"
+[image6]: ./readme_assets/lanes_images.png "Lanes images"
+[image7]: ./readme_assets/final_images.png "Final images"
+[image8]: ./readme_assets/calibration.png "Calibration"
 
 
-
+![alt text][image1]
+![alt text][image2]
+![alt text][image3]
+![alt text][image4]
+![alt text][image5]
+![alt text][image6]
+![alt text][image7]
+![alt text][image8]
 
 
 ### Files and project navigation 
 The project includes the following files:
-* calibration.py, calibration_cal_corners, and calibration.p containing the calibration procedure, chessboard images with detected corners, and output coefficients.
-* process_image.py containing the main pipelines
-* image_gen.py containing helper functions
-* video_annotated.mp4 contained the output video
+* test_images and test_videos contain testing data.
+* test_images_results and test_videos_results are folders that contain testing data with predicated lane lines.
+* functions.py contains transformation functions and helper functions.
+* exploratory.py contains parameters and methods to plot test images and transformations.
+* pipeline.py contains the video processing pipeline and `process_frame(image)` function which is used on each frame. 
+* The folder camera_calibration which includes calibration.py (script to do the calibration), calibration.p (calibration results/params), camera_cal (original images used for calibration), camera_cal_corners (original images with corners detected)
 
 
 ### Camera Calibration
 To do the camera calibration, I used a common technique where you compare images of chessboards, detect the corners, and compare the location of the corners to where they should be. 
 
 More specifically, I started by preparing "object poinnts" which are the 3D (x,y,z) coordinates of the chessboard corners in the real world (z=0) and compare these with "image points" which I can detect using the `findChessboardCorners` function. Then, once I got the calibration and distortion coefficients, I used the the `cv2.undistort()` function to correct the test images and got the following results: 
-
-![alt text][image1]
-![alt text][image2]
-![alt text][image3]
 
 
 ### Creating a thresholded binary image
@@ -59,8 +63,6 @@ Ultimately, I found that using a combination of the the HLS threshold and magnit
 
 After applying these filters, I also utilized a filter/window to remove the area of the image where lane lines wouldn't be. 
 
-![alt text][image4]
-![alt text][image5]
 
 ### Perspective transform
 
@@ -74,8 +76,6 @@ dst = np.float32([(200, 720), (1080, 720), (200, 0), (1080, 0)])
 ```
 I then verified that the perspective transformation was working by drawing the source and destination points on a test image and its warped transformation, and ensuring the lines were parallel (left and right lane lines should always be parallel). 
 
-![alt text][image6]
-![alt text][image7]
 
 ### Identifying lane line pixels and fitting a polynomial
 
@@ -85,8 +85,6 @@ Then I utilized a sliding window approach to determine the location of the lanes
 
 Once I had the windows and lane centers, I use the `np.polyfit` function to draw two second-order polynomials on the image to indicate the lane lines. 
 
-![alt text][image8]
-![alt text][image9]
 
 
 ### Radius of curvature and lane position relative to car 
@@ -101,11 +99,11 @@ To calculate the lane position relative to the car I compared the center of the 
 
 To undue the transform I used the `warpPerspective` function again but used the source and image points parameters in reverse order. After that I used the `fillPoly` function to color the are in between the lane lines in green. 
 
-![alt text][image10]
 
 ### Video pipeline
 I created a separate file to process the video, called `process_video.py`. Here I used the moviepy library to read the video, edit it using the process function I defined, and save it. 
 The output video file is called `video_annotated.mp4`.
+
 
 ### Discussion
 The video pipeleine did a robust job of detecting lane lines, but it didn't perform too great on the challenge project.
