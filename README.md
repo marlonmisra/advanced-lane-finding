@@ -36,13 +36,15 @@ The project includes the following files:
 ### Creating a thresholded binary image
 A thresholded binary image an image that only has 2 types of pixels - pixels which make up the lane and pixels which don't. The idea is that you want to start by removing all noise, before trying to detect the lanes.
 
+
 **Camera Calibration**
 
 Most cameras distort images in some way. Although the effects are usually minor, it's important that we account for it so that we can later calculate lane curvature correctly. 
 
 To determine the extent of lens distortion, I used a common technique to determine a transformation function that can be used to undistort an image. The technique works by taking images of chess boards, specifying how many chessboard corners are on the images, and using the OpenCV function `cv2.findChessboardCorners` to compare the position of where the corners should be vs. where they are found on the image. More specifically, I prepared "object points" which are the 3D (x,y,z) coordinates of the chessboard corners in the real world (z=0) and compared these with "image points" which I detected with the function above. Using the image points and object points, I could then use the OpenCV function `cv2.calibrateCamera()` to get a set of coefficients to undistort any other image. Finally I used `cv2.undistort()` on my test images. Note that the distortion mostly impacted the edges of the images. 
 
-** Edge detection**
+
+**Edge detection**
 As you can see in the image above, I made use of 3 different edge detection techniques - the absolute Sobel threshold, the magnitude Sobel threshold, and the directional Sobel threshold. 
 
 
