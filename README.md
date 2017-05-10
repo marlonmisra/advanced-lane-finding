@@ -23,6 +23,7 @@ The goals/steps I'll explain in depth are:
 [image5]: ./readme_assets/birdsview_images.png "Birdsview images"
 [image6]: ./readme_assets/lanes_images.png "Lanes images"
 [image7]: ./readme_assets/final_images.png "Final images"
+[image8]: ./readme_assets/sobel.gif "Sobel"
 
 ### Files and project navigation 
 The project includes the following files:
@@ -33,14 +34,7 @@ The project includes the following files:
 * pipeline.py contains the video processing pipeline and `process_frame(image)` function which is used on each frame. 
 * The folder camera_calibration which includes calibration.py (script to do the calibration), calibration.p (calibration results/params), camera_cal (original images used for calibration), camera_cal_corners (original images with corners detected)
 
-
-### Creating a thresholded binary image
-
-**Approach**
-
-A thresholded binary image an image that only has 2 types of pixels - pixels which make up the lane and pixels which don't. The idea is that you want to start by removing all noise, before trying to detect the lanes.
-
-**Camera Calibration**
+### Undistortion
 
 Most cameras distort images in some way. Although the effects are usually minor, it's important that we account for it so that we can later calculate lane curvature correctly. 
 
@@ -94,32 +88,114 @@ ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, img_siz
 calibration = {}
 calibration['mtx'] = mtx
 calibration['dist'] = dist
+pickle.dump(calibration, open("./calibration.p", "wb"))
+print("Saved calibration file")
 ```
 
+```python
+def undistort_image(image):
+	calibration = pickle.load( open("./camera_calibration/calibration.p", "rb") )
+	mtx = calibration['mtx']
+	dist = calibration['dist']
+	undist = cv2.undistort(image,mtx,dist,None,mtx)
+	return undist
+```
+
+### Binary thresholds 
+
+**Approach**
+
+A thresholded binary image an image that only has 2 types of pixels - pixels which make up the lane and pixels which don't. The idea is that you want to start by removing all noise, before trying to detect the lanes. To create a thresholded binary image, I did 2 things - (1) detect lane pixels by using edge detection, and (2) detect lane pixels by setting color thresholds in various color spaces. I'll describe each of these in depth. 
 
 
 **Edge detection**
 
-As you can see in the image above, I made use of 3 different edge detection techniques - the absolute Sobel threshold, the magnitude Sobel threshold, and the directional Sobel threshold. 
+I made use of 3 different edge detection techniques - the absolute Sobel threshold, the magnitude Sobel threshold, and the directional Sobel threshold. For the absolute Sobel threshold, you can either use a kernel to detect changes in the X direction or Y direction. I found the X direction to work best because lane lines are most visible as you look at the image from left to right. The way the absolute Sobel X operator works is that it defines a small NxN matrix which is moved across the whole image. The NxN matrix has values such that when you multiply them by the values of the image below you get a number which tells you about the gradient. For this to work the Soble operator is defined as follows for a small kernel of 2. 
+
+![alt text][image8]
+
+I also used a magnitude Sobel threshold which uses a combination of the absole sobel threshold in the X and Y direction. I found this one to work well, but not as well as the simple Sobel X operator. 
+
+Lastly, I used the directional Sobel threshold, where I calculated the arctan of (Sobel X/Sobel Y) to constrain the search for gradients in a specific direction. I found this technique to be unnecessarily complex compared to the simple Sobel X operator. 
+
+```python
+def abs_sobel_thresh(image, orient = 'x', sobel_kernel=3, thresh = (0.7,5)):
+	gray = cv2. cvtColor(image, cv2.COLOR_RGB2GRAY)
+
+	if orient == 'x':
+		sobel = cv2.Sobel(gray, cv2.CV_64F, 1, 0 ,ksize = sobel_kernel)
+	if orient =='y':
+		sobel = cv2.Sobel(gray, cv2.CV_64F, 0, 1 ,ksize = sobel_kernel)
+	
+	abs_sobel = np.absolute(sobel)
+	scaled_sobel = np.uint8(255*abs_sobel/np.max(abs_sobel))
+
+	abs_sobel_thresh = np.zeros_like(scaled_sobel)
+	abs_sobel_thresh[(scaled_sobel > thresh[0]) & (scaled_sobel < thresh[1])] = 1
+
+	return abs_sobel_thresh
+
+def mag_thresh(image, sobel_kernel=3, thresh=(1, 5)):
+	gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+
+	sobelx = cv2.Sobel(gray, cv2.CV_64F, 1, 0 ,ksize = sobel_kernel)
+	sobely = cv2.Sobel(gray, cv2.CV_64F, 0, 1 ,ksize = sobel_kernel)
+
+	sobel_magnitude = np.sqrt(sobelx**2 + sobely**2)
+	scaled_magnitude = np.uint8(255*sobel_magnitude/np.max(sobel_magnitude))
+
+	mag_thresh = np.zeros_like(scaled_magnitude)
+	mag_thresh[(scaled_magnitude > thresh[0]) & (scaled_magnitude < thresh[1])] = 1
+
+	return mag_thresh
+
+def dir_thresh(image, sobel_kernel=3, thresh=(0, np.pi/2)):
+    gray = cv2. cvtColor(image, cv2.COLOR_RGB2GRAY)
+
+    sobelx = cv2.Sobel(gray, cv2.CV_64F, 1, 0 ,ksize = sobel_kernel)
+    sobely = cv2.Sobel(gray, cv2.CV_64F, 0, 1 ,ksize = sobel_kernel)
+
+    abs_sobelx = np.absolute(sobelx)
+    abs_sobely = np.absolute(sobely)
+
+    directions = np.arctan2(sobely, sobelx)
+
+    dir_threshold = np.zeros_like(directions)
+    dir_threshold[(directions > thresh[0]) & (directions < thresh[1])] = 1
+
+    return dir_threshold
+```
+
+**Color transforms**
+I experimented with several color spaces and parameters to see if any of them were particularly useful. In total I looked at 4 space - the RGB (reg/green/blue) space, the HLS (hue/lightness/saturation) space, the HSV (hue/saturation/value) space, and the YCrCb (luma/blue-difference chroma component)/(red-difference chroma component) space. For each space, I defined the function in a way such that I could set a lower and upper bound on the value I want to filter by. Overall, the HLS space gave the best results, and it was specifically the S or saturation component that worked most robustly in different lighting conditions. I'm only giving a code example of the HLS conversion function below because they were all implemented in the same way (OpenCV has simple functions to convert from RGB space to others. 
+
+```python
+def hls_thresh(image, channel="h", thresh=(0, 50)):
+    hls = cv2.cvtColor(image, cv2.COLOR_RGB2HLS)
+
+    if channel=="h":
+        threshold_channel = hls[:,:,0]
+    if channel=="l":
+        threshold_channel = hls[:,:,1]
+    if channel=="s":
+        threshold_channel = hls[:,:,2]
+
+    hls_threshold = np.zeros_like(threshold_channel)
+    hls_threshold[(threshold_channel > thresh[0]) & (threshold_channel < thresh[1])] = 1
+    return hls_threshold
+```
+
+![alt text][image1]
 
 
-
-
-
-
-
-I did exploratory analysis to compare the effectiveness of various techniques. For each technique, I tried various kernels and thresholds. They included:
-* absolute sobel threshold (in X and Y directions)
-* magnitude sobel threshold
-* directional threshold
-* RGB thresholds
-* HLS (hue/lightness/saturation) thresholds
+### Combined thresholds
 
 Ultimately, I found that using a combination of the the HLS threshold and magnitude threshold works the best.
 
-After applying these filters, I also utilized a filter/window to remove the area of the image where lane lines wouldn't be. 
 
-![alt text][image1]
+### Region of interest
+
+After applying these filters, I also utilized a filter/window to remove the area of the image where lane lines wouldn't be. 
 
 
 **Original images**

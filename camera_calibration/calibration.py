@@ -40,11 +40,11 @@ for idx, image_name in enumerate(image_names):
 			print("Saved corners for image ", str(idx))
 
 
-#load image for reference
+#load arbitrary image for size
 img  = cv2.imread('./camera_cal/calibration11.jpg')
 img_size = (img.shape[1], img.shape[0])
 
-#camera calibration
+#camera calibration coefficients
 ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, img_size, None, None)
 
 #save camera calibration results for later

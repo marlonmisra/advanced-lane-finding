@@ -61,8 +61,8 @@ def plot_calibration():
 	ax2.imshow(corners)
 	ax2.set_title(labels[1])
 	ax2.axis('off')
-	#plt.show()
-	plt.savefig('image.png', bbox_inches='tight', cmap='gray')
+	plt.show()
+	#plt.savefig('image.png', bbox_inches='tight', cmap='gray')
 #plot_calibration()
 
 
