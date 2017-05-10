@@ -45,9 +45,7 @@ YCrCb_images = [YCrCb_thresh(undistorted_image, channel=YCrCb_thresh_channel, th
 combined_images = [combine_threshs(hls_thresh, abs_sobel_thresh) for hls_thresh, abs_sobel_thresh in zip(hls_thresh_images, abs_sobel_thresh_images)]
 windowed_images = [filterf(combined) for combined in combined_images]
 birds_view_images = [transform_image(windowed_image, M, img_size) for windowed_image in windowed_images]
-
-#ALL TRANSFORMATIONS
-progress = [images, undistorted_images, abs_sobel_thresh_images, mag_thresh_images, dir_thresh_images, rgb_thresh_images, hls_thresh_images, hsv_thresh_images, YCrCb_images, combined_images, windowed_images, birds_view_images]
+progress = [images, undistorted_images, abs_sobel_thresh_images, mag_thresh_images, dir_thresh_images, rgb_thresh_images, hls_thresh_images, hsv_thresh_images, YCrCb_images]
 
 
 #PLOT CALIBRATION
@@ -65,15 +63,13 @@ def plot_calibration():
 	ax2.axis('off')
 	#plt.show()
 	plt.savefig('image.png', bbox_inches='tight', cmap='gray')
-
 #plot_calibration()
-
 
 
 #PLOT PROGRESS
 def plot_progress(progress, test_image_number):
-	labels = ['Original', 'Undistorted', 'Abs. Sobel Thresh.', 'Mag. Sobel Thresh.', 'Dir. Sobel Thresh.', 'RGB Thresh.', 'HLS Thresh.', 'HSV Thresh.', 'YCrCb Thresh', 'Combined', 'Windowed', 'Bird view']
-	fig, axes = plt.subplots(nrows=4, ncols=3, figsize = (15,10))
+	labels = ['Original', 'Undistorted', 'Abs. Sobel Thresh.', 'Mag. Sobel Thresh.', 'Dir. Sobel Thresh.', 'RGB Thresh.', 'HLS Thresh.', 'HSV Thresh.', 'YCrCb Thresh']
+	fig, axes = plt.subplots(nrows=3, ncols=3, figsize = (15,10))
 	axes = axes.ravel()
 	fig.tight_layout()
 

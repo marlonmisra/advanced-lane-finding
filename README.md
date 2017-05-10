@@ -15,8 +15,8 @@ The goals/steps I'll explain in depth are:
 
 [//]: # (Image References)
 
-[image1]: ./readme_assets/original_images.png "Original images"
-[image2]: ./readme_assets/transformations.png "Transformations"
+[image1]: ./readme_assets/transformations.png "Transformations"
+[image2]: ./readme_assets/original_images.png "Original images"
 [image3]: ./readme_assets/combined_images.png "Combined images"
 [image4]: ./readme_assets/windowed_images.png "Windowed images"
 [image5]: ./readme_assets/birdsview_images.png "Birdsview images"
@@ -60,11 +60,11 @@ Ultimately, I found that using a combination of the the HLS threshold and magnit
 
 After applying these filters, I also utilized a filter/window to remove the area of the image where lane lines wouldn't be. 
 
-![alt text][image2]
+![alt text][image1]
 
 
 **Original images**
-![alt text][image1]
+![alt text][image2]
 
 
 **Multi-threshold binary image**
