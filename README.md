@@ -1,5 +1,6 @@
 ## Advanced Lane Finding project
----
+
+
 ### Introduction 
 I previously worked on a [lane finding project](https://github.com/marlonmisra/lane-finding) where I built a simple pipeline that detects lanes on front-facing car video footage. The goal remains the same, but here I'm using more advanced techniques to make the model more robust. Robust in this context means that the pipeline should perform well in poorer lighting conditions, worse weather conditions, and is agnostic to the color of the lane lines. Rather than just predict linear lane lines, this time I'll also predict the curvature of the lanes. 
 
@@ -34,8 +35,10 @@ The project includes the following files:
 
 
 ### Creating a thresholded binary image
-A thresholded binary image an image that only has 2 types of pixels - pixels which make up the lane and pixels which don't. The idea is that you want to start by removing all noise, before trying to detect the lanes.
 
+**Approach**
+
+A thresholded binary image an image that only has 2 types of pixels - pixels which make up the lane and pixels which don't. The idea is that you want to start by removing all noise, before trying to detect the lanes.
 
 **Camera Calibration**
 
@@ -44,7 +47,59 @@ Most cameras distort images in some way. Although the effects are usually minor,
 To determine the extent of lens distortion, I used a common technique to determine a transformation function that can be used to undistort an image. The technique works by taking images of chess boards, specifying how many chessboard corners are on the images, and using the OpenCV function `cv2.findChessboardCorners` to compare the position of where the corners should be vs. where they are found on the image. More specifically, I prepared "object points" which are the 3D (x,y,z) coordinates of the chessboard corners in the real world (z=0) and compared these with "image points" which I detected with the function above. Using the image points and object points, I could then use the OpenCV function `cv2.calibrateCamera()` to get a set of coefficients to undistort any other image. Finally I used `cv2.undistort()` on my test images. Note that the distortion mostly impacted the edges of the images. 
 
 
+```python
+#corners
+nx, ny = 9, 6
+channels = 3
+
+#calibration image list
+image_names = glob.glob('./camera_cal/calibration*.jpg')
+
+#imgpoints and objpoints
+imgpoints = [] #2D in image plane
+objpoints = [] #3D in real life, all same
+objp = np.zeros((ny * nx, channels), np.float32)
+objp[:, :2] = np.mgrid[0:nx, 0:ny].T.reshape(-1, 2) #x, y coordinates
+
+
+#loop through
+for idx, image_name in enumerate(image_names):
+		cal_img = mpimg.imread(image_name)
+		cal_img_gray = cv2.cvtColor(cal_img,cv2.COLOR_BGR2GRAY)
+
+		#get corners
+		ret, corners = cv2.findChessboardCorners(cal_img_gray, (nx, ny), None)
+
+		#add to object and image points
+		if ret == True:
+			print("Got corners for image ", str(idx))
+			imgpoints.append(corners)
+			objpoints.append(objp)
+
+			#draw and display corners
+			cv2.drawChessboardCorners(cal_img, (nx, ny), corners, ret)
+			write_path = "./camera_cal_corners/calibration" + str(idx) + "_corners.jpg"
+			cv2.imwrite(write_path, cal_img)
+			print("Saved corners for image ", str(idx))
+
+
+#load arbitrary image for size
+img  = cv2.imread('./camera_cal/calibration11.jpg')
+img_size = (img.shape[1], img.shape[0])
+
+#camera calibration coefficients
+ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, img_size, None, None)
+
+#save camera calibration results for later
+calibration = {}
+calibration['mtx'] = mtx
+calibration['dist'] = dist
+```
+
+
+
 **Edge detection**
+
 As you can see in the image above, I made use of 3 different edge detection techniques - the absolute Sobel threshold, the magnitude Sobel threshold, and the directional Sobel threshold. 
 
 
