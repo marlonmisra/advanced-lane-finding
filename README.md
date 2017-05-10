@@ -16,15 +16,16 @@ The goals/steps I'll explain in depth are:
 
 [//]: # (Image References)
 
-[image1]: ./readme_assets/transformations.png "Transformations"
-[image2]: ./readme_assets/original_images.png "Original images"
-[image3]: ./readme_assets/combined_images.png "Combined images"
-[image4]: ./readme_assets/windowed_images.png "Windowed images"
-[image5]: ./readme_assets/birdsview_images.png "Birdsview images"
-[image6]: ./readme_assets/lanes_images.png "Lanes images"
-[image7]: ./readme_assets/final_images.png "Final images"
-[image8]: ./readme_assets/sobel.gif "Sobel"
-[image9]: ./readme_assets/distortion.png "distortion"
+[image1]: ./readme_assets/distortion.png "distortion"
+[image2]: ./readme_assets/transformations.png "Transformations"
+[image3]: ./readme_assets/sobel.gif "Sobel"
+[image4]: ./readme_assets/original_images.png "Original images"
+[image5]: ./readme_assets/combined_images.png "Combined images"
+[image6]: ./readme_assets/windowed_images.png "Windowed images"
+[image7]: ./readme_assets/birdsview_images.png "Birdsview images"
+[image8]: ./readme_assets/lanes_images.png "Lanes images"
+[image9]: ./readme_assets/final_images.png "Final images"
+
 
 ### Files and project navigation 
 The project includes the following files:
@@ -41,7 +42,7 @@ Most cameras distort images in some way. Although the effects are usually minor,
 
 To determine the extent of lens distortion, I used a common technique to determine a transformation function that can be used to undistort an image. The technique works by taking images of chess boards, specifying how many chessboard corners are on the images, and using the OpenCV function `cv2.findChessboardCorners` to compare the position of where the corners should be vs. where they are found on the image. More specifically, I prepared "object points" which are the 3D (x,y,z) coordinates of the chessboard corners in the real world (z=0) and compared these with "image points" which I detected with the function above. Using the image points and object points, I could then use the OpenCV function `cv2.calibrateCamera()` to get a set of coefficients to undistort any other image. Finally I used `cv2.undistort()` on my test images. Note that the distortion mostly impacted the edges of the images. 
 
-![alt text][image9]
+![alt text][image1]
 
 
 ```python
@@ -110,13 +111,13 @@ def undistort_image(image):
 
 A thresholded binary image an image that only has 2 types of pixels - pixels which make up the lane and pixels which don't. To create a thresholded binary image, I did 2 things - (1) detect lane pixels by using edge detection, and (2) detect lane pixels by using different color spaces. Below is an image that shows all the transformations I looked at for exploratory analysis. 
 
-![alt text][image1]
+![alt text][image2]
 
 **Edge detection**
 
 I made use of 3 different edge detection techniques - the absolute Sobel threshold, the magnitude Sobel threshold, and the directional Sobel threshold. For the absolute Sobel threshold, you can either use a kernel to detect changes in the X direction or Y direction. I found the X direction to work best because lane lines are most visible as you look at the image from left to right. The way the absolute Sobel X operator works is that it defines a small NxN matrix which is moved across the whole image. The NxN matrix has values such that when you multiply them by the values of the image below you get a number which tells you about the gradient. For this to work the Soble operator is defined as follows for a small kernel of 2. 
 
-![alt text][image8]
+![alt text][image3]
 
 I also used a magnitude Sobel threshold which uses a combination of the absole sobel threshold in the X and Y direction. I found this one to work well, but not as well as the simple Sobel X operator. 
 
@@ -171,6 +172,7 @@ def dir_thresh(image, sobel_kernel=3, thresh=(0, np.pi/2)):
 ```
 
 **Color transforms**
+
 I experimented with several color spaces and parameters to see if any of them were particularly useful. In total I looked at 4 space - the RGB (reg/green/blue) space, the HLS (hue/lightness/saturation) space, the HSV (hue/saturation/value) space, and the YCrCb (luma/blue-difference chroma component)/(red-difference chroma component) space. For each space, I defined the function in a way such that I could set a lower and upper bound on the value I want to filter by. Overall, the HLS space gave the best results, and it was specifically the S or saturation component that worked most robustly in different lighting conditions. I'm only giving a code example of the HLS conversion function below because they were all implemented in the same way (OpenCV has simple functions to convert from RGB space to others. 
 
 ```python
@@ -192,16 +194,18 @@ def hls_thresh(image, channel="h", thresh=(0, 50)):
 
 ### Combined thresholds
 
-After experimenting with combinations of different transforms, I found that the absolute Sobel threshold (in the X direction) together created the best binary thresholded image. The parameters that worked best are below. 
+After experimenting with combinations of different transforms, I found that the absolute Sobel threshold (in the X direction) and the HLS (specifically the saturation threshold) together resulted in the best binary thresholded image. The parameters that worked best are below. 
 
+![alt text][image4]
+
+![alt text][image5]
+
+```python
 abs_sobel_kernel = 15
 abs_sobel_threshold = (24,100)
 hls_thresh_channel = 's'
 hls_thresh_threshold = (110,255)
-
-![alt text][image2]
-
-![alt text][image3]
+```
 
 ```python
 def combine_threshs(hls_thresh_1, abs_sobel_thresh_1):
@@ -213,9 +217,9 @@ def combine_threshs(hls_thresh_1, abs_sobel_thresh_1):
 
 ### Region of interest
 
-Up until this point, the goal of the binary thresholding was more focused on identifying pixels that belonged the lanes rather than minimizing false positives. One way to effectively reduce false positives now is to apply a region of interest window that sets all pixels in non-important areas to 0. These are pixels on the far left and right, and near the top where the sky is. The region of interst area looks like a trapezoid. 
+Up until this point, the goal of the binary thresholding was more focused on identifying pixels that belonged the lanes rather than minimizing false positives. One way to effectively reduce false positives now is to apply a region of interest window that sets all pixels outside of it to 0. These are pixels on the far left and right and near the top where the sky is. The region of interest area looks like a trapezoid and is defined below. 
 
-![alt text][image4]
+![alt text][image6]
 
 ```python
 def filterf(image):
@@ -246,55 +250,172 @@ def filterf(image):
 
 ### Perspective transform
 
-The perspective transform changes the image such that you get a bird's eye view. This is important in order to determine lane curvature. 
-
-The method for my perspective transform is called `transform(proc)`. The transformation is done by specifying "source points" and "destination points". Each set of points has 4 unique points and the transformation effectively specified how this 4-sided figure should look in the new space. The source points were manually chosen to be the trapezoid that makes up the main lane area. The destination points were also manually chosen to be a rectangle. My points were the following: 
+The perspective transform changes the image such that you get a bird's eye top-down view. This was a necesary step because it is much easier to determine lane curvate from this perspective. Before being able to apply a perspective transform, you need to define 4 source points and 4 destination points - knowledge of how each of these 4 points change lets you apply the OpenCV `cv2.warpPerspective` function. In order to get the source and destination I looked at a straight lane image, defined 4 points that make up the lane, and set the destination points in a way such that they make a rectangle. This has to be true because from a top-down view straight lanes should be parallel. The M parameter below defines the transformation to birds-view space and the Minv parameter defines the transformation back to the original space which we have to use later. 
 
 ```python
 src = np.float32([(257, 685), (1050, 685), (583, 460),(702, 460)])
 dst = np.float32([(200, 720), (1080, 720), (200, 0), (1080, 0)])
+M = cv2.getPerspectiveTransform(src, dst) 
+Minv = cv2.getPerspectiveTransform(dst, src)
 ```
-I then verified that the perspective transformation was working by drawing the source and destination points on a test image and its warped transformation, and ensuring the lines were parallel (left and right lane lines should always be parallel). 
-
-![alt text][image5]
-
-
-### Identifying lane line pixels and fitting a polynomial
-
-I started by creating a historgram for the buttom half of the transformed image and found the midpoint of the lane by taking the average of the two peaks. 
-
-Then I utilized a sliding window approach to determine the location of the lanes as you go further away form the car. 
-
-Once I had the windows and lane centers, I use the `np.polyfit` function to draw two second-order polynomials on the image to indicate the lane lines. 
-
-![alt text][image6]
-
-
-### Radius of curvature and lane position relative to car 
-
-The radius of curvature is the radius of a circle that touches a curve at a given point and has the same tangent and curvature at that point. I used standard formulas to calculate the radius on both the left and right lane lines. 
-
-To calculate the lane position relative to the car I compared the center of the image (center of the car) to the midpoint between the left lane and right lane intersections with the bottom of the image. 
-
-
-
-### Final image after undoing the transformation 
-
-To undue the transform I used the `warpPerspective` function again but used the source and image points parameters in reverse order. After that I used the `fillPoly` function to color the are in between the lane lines in green. 
-
 
 ![alt text][image7]
 
 
+### Identifying lane line pixels and fitting a polynomial
+
+In order to identify lane pixels, I started by creating a historgram for the bottom half of the transformed image and found the midpoint of the lane by taking the average of the two peaks. Then I utilized a sliding window approach to determine the location of the lanes as you go further away form the car. Once I had the windows and lane centers, I drew two second-order polynomials on the image to indicate the lane lines. 
+
+![alt text][image8]
+
+```python
+def find_lanes(trans):
+	#create historgram for bottom half of trans
+	hist = np.sum(trans[trans.shape[0]/2:,:], axis=0) 
+	#output image to draw on + visualize
+	out_img = np.dstack((trans, trans, trans))*255
+	#peaks of left + right halves if hist	
+	midpoint = np.int(hist.shape[0]/2)
+	leftx_base = np.argmax(hist[:midpoint])
+	rightx_base = np.argmax(hist[midpoint:]) + midpoint
+	#number of sliding windows
+	nwindows = 9
+	#window height 
+	window_height = np.int(trans.shape[0]/nwindows)
+
+	#x and y positions of all nonzero pizels in img
+	nonzero = trans.nonzero()
+	nonzeroy = np.array(nonzero[0])
+	nonzerox = np.array(nonzero[1])
+
+	#current positions to be updated
+	leftx_current = leftx_base
+	rightx_current = rightx_base
+
+	#width of windows +/- margin
+	margin = 100
+	#min number of pixels to recenter window
+	minpix = 50
+
+	#empty lists to receive left and right lane pixel indices
+	left_lane_indices = []
+	right_lane_indices = []
+
+	#step through windows one by one
+	for window in range(nwindows):
+	    # Identify window boundaries in x and y (and right and left)
+	    win_y_low = trans.shape[0] - (window+1)*window_height
+	    win_y_high = trans.shape[0] - window*window_height
+	    win_xleft_low = leftx_current - margin
+	    win_xleft_high = leftx_current + margin
+	    win_xright_low = rightx_current - margin
+	    win_xright_high = rightx_current + margin
+	    # Draw the windows on the visualization image
+	    cv2.rectangle(out_img,(win_xleft_low,win_y_low),(win_xleft_high,win_y_high),(0,255,0), 2) 
+	    cv2.rectangle(out_img,(win_xright_low,win_y_low),(win_xright_high,win_y_high),(0,255,0), 2) 
+	    # Identify the nonzero pixels in x and y within the window
+	    good_left_indices = ((nonzeroy >= win_y_low) & (nonzeroy < win_y_high) & (nonzerox >= win_xleft_low) & (nonzerox < win_xleft_high)).nonzero()[0]
+	    good_right_indices = ((nonzeroy >= win_y_low) & (nonzeroy < win_y_high) & (nonzerox >= win_xright_low) & (nonzerox < win_xright_high)).nonzero()[0]
+	    # Append these indices to the lists
+	    left_lane_indices.append(good_left_indices)
+	    right_lane_indices.append(good_right_indices)
+	    # If you found > minpix pixels, recenter next window on their mean position
+	    if len(good_left_indices) > minpix:
+	        leftx_current = np.int(np.mean(nonzerox[good_left_indices]))
+	    if len(good_right_indices) > minpix:        
+	        rightx_current = np.int(np.mean(nonzerox[good_right_indices]))
+
+	# Concatenate the arrays of indices
+	left_lane_indices = np.concatenate(left_lane_indices)
+	right_lane_indices = np.concatenate(right_lane_indices)
+
+	# Extract left and right line pixel positions
+	leftx = nonzerox[left_lane_indices]
+	lefty = nonzeroy[left_lane_indices] 
+	rightx = nonzerox[right_lane_indices]
+	righty = nonzeroy[right_lane_indices] 
+
+	# Fit a second order polynomial to each
+	left_fit = np.polyfit(lefty, leftx, 2)
+	right_fit = np.polyfit(righty, rightx, 2)
+
+	# Generate x and y values for plotting
+	ploty = np.linspace(0, trans.shape[0]-1, trans.shape[0] )
+	left_fitx = left_fit[0]*ploty**2 + left_fit[1]*ploty + left_fit[2]
+	right_fitx = right_fit[0]*ploty**2 + right_fit[1]*ploty + right_fit[2]
+
+	out_img[nonzeroy[left_lane_indices], nonzerox[left_lane_indices]] = [255, 0, 0]
+	out_img[nonzeroy[right_lane_indices], nonzerox[right_lane_indices]] = [0, 0, 255]
+	
+	return out_img, ploty, left_fit, left_fitx, leftx_base, right_fit, right_fitx, rightx_base
+```
+
+
+### Radius of curvature and lane position relative to car 
+
+The radius of curvature is the radius of a circle that touches a curve at a given point and has the same tangent and curvature at that point. I used standard formulas to calculate the radius on both the left and right lane lines. To calculate the lane position relative to the car I compared the center of the image (center of the car) to the midpoint between the left lane and right lane intersections with the bottom of the image. 
+
+```python
+def curvature_radius(trans, left_fit, right_fit):
+	y_eval = np.max(trans[0])
+	left_curverad = ((1 + (2*left_fit[0]*y_eval + left_fit[1])**2)**1.5) / np.absolute(2*left_fit[0])
+	right_curverad = ((1 + (2*right_fit[0]*y_eval + right_fit[1])**2)**1.5) / np.absolute(2*right_fit[0])
+	radi = [left_curverad, right_curverad]
+	curvature_string = "Radius of Curvature: " + str(int(radi[0])) + ", " + str(int(radi[1]))
+	return curvature_string
+
+def pos_from_center(trans, leftx_base, rightx_base):
+	pos = trans.shape[1]/2
+	offset = abs(pos - (leftx_base + rightx_base)/2)
+	location_string = "Vehicle Dist. from Center: " + str(offset)
+	return location_string
+```
+
+
+### Final image after undoing the transformation 
+
+To get the final image, I warped the birds-view image back into the original space. And then I drew the lanes and filled the area in between using the `fillPoly` function. 
+
+![alt text][image9]
+
+```python
+def final_image(image, persp_transform_image, ploty, leftx_base, left_fit, left_fitx, rightx_base, right_fit, right_fitx, Minv):
+	#perspective transform back
+	warp_zero = np.zeros_like(persp_transform_image).astype(np.uint8)
+	color_warp = np.dstack((warp_zero, warp_zero, warp_zero))
+	#Recast the x and y points into usable format for cv2.fillPoly()
+	pts_left = np.array([np.transpose(np.vstack([left_fitx, ploty]))])
+	pts_right = np.array([np.flipud(np.transpose(np.vstack([right_fitx, ploty])))])
+	pts = np.hstack((pts_left, pts_right))
+ 	# Draw the lane onto the warped blank image
+	cv2.fillPoly(color_warp, np.int_([pts]), (0, 255, 0))
+	# Warp the blank back to original image space using inverse perspective matrix (Minv)
+	newwarp = cv2.warpPerspective(color_warp, Minv, (persp_transform_image.shape[1], persp_transform_image.shape[0])) 
+
+    #Combine the result with the original image
+	result = cv2.addWeighted(image, 1, newwarp, 0.3, 0)
+
+	#info strings
+	curvature_string = curvature_radius(persp_transform_image, left_fit, right_fit)
+	location_string = pos_from_center(persp_transform_image, leftx_base, rightx_base)
+
+	font = cv2.FONT_HERSHEY_SIMPLEX
+	cv2.putText(result,curvature_string,(400,50), font, 1,(255,255,255),2,cv2.LINE_AA)
+	cv2.putText(result,location_string,(400,100), font, 1,(255,255,255),2,cv2.LINE_AA)
+	return result
+```
+
+
 ### Video pipeline
-I created a separate file to process the video, called `process_video.py`. Here I used the moviepy library to read the video, edit it using the process function I defined, and save it. 
-The output video file is called `video_annotated.mp4`.
+In `pipeline.py`, there are two functions defined. The first, `process_frame(image)` applies the steps described above in sequence to a frame. The second function, `process_video(input_path, output_path)`, applies the processing function to each frame, and saves a video of the output file. 
 
 
 ### Discussion
-The video pipeleine did a robust job of detecting lane lines, but it didn't perform too great on the challenge project.
+The video pipeleine did a great job of detecting lane lines. It also worked well on videos where lighting conditions varied, and on videos where multiple sharp turns happened in sequence. 
 
-In order to make the pipeline even more robust, I need to:
-* Explore more ways to process images and apply better filters. There are so many combinations of color spaces and methods to find edges, that there are definitely ones out there which perform better.
-* Test the pipelines on more videos to see if it performs well in fog, rain, snow etc.
+Other improvments I'd like to make are: 
+* When doing color space thresholding, doing the thresholding on all 3 dimensions rather than just one.
+* Doing multi-frame smoothing so that the pipeline benefits from the knowledge it gained from previous frames.
+
+
 
