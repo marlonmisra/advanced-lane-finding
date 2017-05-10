@@ -409,6 +409,7 @@ def final_image(image, persp_transform_image, ploty, leftx_base, left_fit, left_
 In `pipeline.py`, there are two functions defined. The first, `process_frame(image)` applies the steps described above in sequence to a frame. The second function, `process_video(input_path, output_path)`, applies the processing function to each frame, and saves a video of the output file. 
 
 ![alt text][image10]
+
 ### Discussion
 The video pipeline did a great job of detecting lane lines. It also worked well on videos where lighting conditions varied, and on videos where multiple sharp turns happened in sequence. 
 
