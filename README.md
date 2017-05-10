@@ -1,17 +1,17 @@
 ## Advanced Lane Finding project
 ---
 ### Introduction 
-I previously worked on 'lane-finding' (also on my Github) where I built a simple pipeline that detects lane lanes on front-facing car footage. The goal remains the same, but here I'm using more advanced techniques so that the model is more robust. Robust in this context means that the pipeline should in poorer lighting conditions, worse weather conditions, is agnostic to the color of the lane lines, and can understand not just linear lanes lines, but also curved lanes. 
+I previously worked on a [lane finding project](https://github.com/marlonmisra/lane-finding) where I built a simple pipeline that detects lanes on front-facing car video footage. The goal remains the same, but here I'm using more advanced techniques to make the model more robust. Robust in this context means that the pipeline should perform well in poorer lighting conditions, worse weather conditions, and is agnostic to the color of the lane lines. Rather than just predict linear lane lines, this time I'll also predict the curvature of the lanes. 
 
 The goals/steps I'll explain in depth are: 
 * Applying distortion correction to raw camera images to remove the effects that lenses have on images. 
 * Exploring different color spaces, including RGB, HLS, HSV, and YCrCb, and choosing the combination that works best together.
-* Using more customizable gradient detection algorithms, including convolutional techniques like the Soble operator. 
-* Applying a perspective transform in order to get a birds-eye view of the lanes such that it's easier to determine lane curvature.
+* Using convolutional techniques like the Soble operator for edge detection. 
+* Applying a perspective transform to get a birds-eye view of the lanes such that it's easier to determine lane curvature.
 * Detecting pixels that belong the lane using a convolutional technique. 
 * Using the location of the lane pixels to fit a polynomial that matches the curvature of the lane. 
 * Outputting the curvature of the lane and vehicle position with respect to center.
-* Warping the image back into the original space and visually identifying the lanes themselves, and the lane area in between. 
+* Warping the images back into the original space and visually identifying the lane markings and the lane area in between. 
 
 [//]: # (Image References)
 
@@ -23,13 +23,6 @@ The goals/steps I'll explain in depth are:
 [image6]: ./readme_assets/lanes_images.png "Lanes images"
 [image7]: ./readme_assets/final_images.png "Final images"
 
-
-
-
-
-
-
-
 ### Files and project navigation 
 The project includes the following files:
 * test_images and test_videos contain testing data.
@@ -40,15 +33,24 @@ The project includes the following files:
 * The folder camera_calibration which includes calibration.py (script to do the calibration), calibration.p (calibration results/params), camera_cal (original images used for calibration), camera_cal_corners (original images with corners detected)
 
 
-### Camera Calibration
-To do the camera calibration, I used a common technique where you compare images of chessboards, detect the corners, and compare the location of the corners to where they should be. 
-
-More specifically, I started by preparing "object poinnts" which are the 3D (x,y,z) coordinates of the chessboard corners in the real world (z=0) and compare these with "image points" which I can detect using the `findChessboardCorners` function. Then, once I got the calibration and distortion coefficients, I used the the `cv2.undistort()` function to correct the test images and got the following results: 
-
-
 ### Creating a thresholded binary image
+A thresholded binary image an image that only has 2 types of pixels - pixels which make up the lane and pixels which don't. The idea is that you want to start by removing all noise, before trying to detect the lanes.
 
-**Process**
+**Camera Calibration**
+
+Most cameras distort images in some way. Although the effects are usually minor, it's important that we account for it so that we can later calculate lane curvature correctly. 
+
+To determine the extent of lens distortion, I used a common technique to determine a transformation function that can be used to undistort an image. The technique works by taking images of chess boards, specifying how many chessboard corners are on the images, and using the OpenCV function `cv2.findChessboardCorners` to compare the position of where the corners should be vs. where they are found on the image. More specifically, I prepared "object points" which are the 3D (x,y,z) coordinates of the chessboard corners in the real world (z=0) and compared these with "image points" which I detected with the function above. Using the image points and object points, I could then use the OpenCV function `cv2.calibrateCamera()` to get a set of coefficients to undistort any other image. Finally I used `cv2.undistort()` on my test images. Note that the distortion mostly impacted the edges of the images. 
+
+** Edge detection**
+As you can see in the image above, I made use of 3 different edge detection techniques - the absolute Sobel threshold, the magnitude Sobel threshold, and the directional Sobel threshold. 
+
+
+
+
+
+
+
 I did exploratory analysis to compare the effectiveness of various techniques. For each technique, I tried various kernels and thresholds. They included:
 * absolute sobel threshold (in X and Y directions)
 * magnitude sobel threshold
