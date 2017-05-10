@@ -52,8 +52,10 @@ progress = [images, undistorted_images, abs_sobel_thresh_images, mag_thresh_imag
 def plot_calibration():
 	no_corners = plt.imread('camera_calibration/camera_cal/calibration10.jpg')
 	corners = plt.imread('camera_calibration/camera_cal_corners/calibration1_corners.jpg')
-	labels = ['No corners', 'Corners']
-	fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2, figsize = (10,4))
+	distorted = images[0]
+	undistorted = undistorted_images[0]
+	labels = ['No corners', 'Corners', 'Distorted', 'Undistorted']
+	fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(nrows=2, ncols=2, figsize = (15,10))
 	fig.tight_layout()
 	ax1.imshow(no_corners)
 	ax1.set_title(labels[0])
@@ -61,8 +63,15 @@ def plot_calibration():
 	ax2.imshow(corners)
 	ax2.set_title(labels[1])
 	ax2.axis('off')
-	plt.show()
-	#plt.savefig('image.png', bbox_inches='tight', cmap='gray')
+	ax3.imshow(distorted)
+	ax3.set_title(labels[2])
+	ax3.axis('off')
+	ax4.imshow(undistorted)
+	ax4.set_title(labels[3])
+	ax4.axis('off')
+
+	#plt.show()
+	plt.savefig('image.png', bbox_inches='tight', cmap='gray')
 #plot_calibration()
 
 

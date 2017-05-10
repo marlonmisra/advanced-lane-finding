@@ -24,6 +24,7 @@ The goals/steps I'll explain in depth are:
 [image6]: ./readme_assets/lanes_images.png "Lanes images"
 [image7]: ./readme_assets/final_images.png "Final images"
 [image8]: ./readme_assets/sobel.gif "Sobel"
+[image9]: ./readme_assets/distortion.png "distortion"
 
 ### Files and project navigation 
 The project includes the following files:
@@ -39,6 +40,8 @@ The project includes the following files:
 Most cameras distort images in some way. Although the effects are usually minor, it's important that we account for it so that we can later calculate lane curvature correctly. 
 
 To determine the extent of lens distortion, I used a common technique to determine a transformation function that can be used to undistort an image. The technique works by taking images of chess boards, specifying how many chessboard corners are on the images, and using the OpenCV function `cv2.findChessboardCorners` to compare the position of where the corners should be vs. where they are found on the image. More specifically, I prepared "object points" which are the 3D (x,y,z) coordinates of the chessboard corners in the real world (z=0) and compared these with "image points" which I detected with the function above. Using the image points and object points, I could then use the OpenCV function `cv2.calibrateCamera()` to get a set of coefficients to undistort any other image. Finally I used `cv2.undistort()` on my test images. Note that the distortion mostly impacted the edges of the images. 
+
+![alt text][image8]
 
 
 ```python
@@ -105,8 +108,9 @@ def undistort_image(image):
 
 **Approach**
 
-A thresholded binary image an image that only has 2 types of pixels - pixels which make up the lane and pixels which don't. The idea is that you want to start by removing all noise, before trying to detect the lanes. To create a thresholded binary image, I did 2 things - (1) detect lane pixels by using edge detection, and (2) detect lane pixels by setting color thresholds in various color spaces. I'll describe each of these in depth. 
+A thresholded binary image an image that only has 2 types of pixels - pixels which make up the lane and pixels which don't. To create a thresholded binary image, I did 2 things - (1) detect lane pixels by using edge detection, and (2) detect lane pixels by using different color spaces. Below is an image that shows all the transformations I looked at for exploratory analysis. 
 
+![alt text][image1]
 
 **Edge detection**
 
@@ -185,32 +189,62 @@ def hls_thresh(image, channel="h", thresh=(0, 50)):
     return hls_threshold
 ```
 
-![alt text][image1]
-
 
 ### Combined thresholds
 
-Ultimately, I found that using a combination of the the HLS threshold and magnitude threshold works the best.
+After experimenting with combinations of different transforms, I found that the absolute Sobel threshold (in the X direction) together created the best binary thresholded image. The parameters that worked best are below. 
 
+abs_sobel_kernel = 15
+abs_sobel_threshold = (24,100)
+hls_thresh_channel = 's'
+hls_thresh_threshold = (110,255)
+
+![alt text][image2]
+
+![alt text][image3]
+
+```python
+def combine_threshs(hls_thresh_1, abs_sobel_thresh_1):
+	combined = np.zeros_like(hls_thresh_1)
+	combined[hls_thresh_1 == 1] = 1
+	combined[abs_sobel_thresh_1 == 1] = 1
+	return combined
+```
 
 ### Region of interest
 
-After applying these filters, I also utilized a filter/window to remove the area of the image where lane lines wouldn't be. 
+Up until this point, the goal of the binary thresholding was more focused on identifying pixels that belonged the lanes rather than minimizing false positives. One way to effectively reduce false positives now is to apply a region of interest window that sets all pixels in non-important areas to 0. These are pixels on the far left and right, and near the top where the sky is. The region of interst area looks like a trapezoid. 
 
-
-**Original images**
-![alt text][image2]
-
-
-**Multi-threshold binary image**
-![alt text][image3]
-
-
-**Region of interest**
 ![alt text][image4]
 
+```python
+def filterf(image):
+	height, width = image.shape[0], image.shape[1]
+	bl = (width / 2 - 480, height - 30)
+	br = (width / 2 + 480, height - 30)
+	tl = (width / 2 - 60, height / 2 + 76)
+	tr = (width / 2 + 60, height / 2 + 76)
 
-**Perspective transform**
+	fit_left = np.polyfit((bl[0], tl[0]), (bl[1], tl[1]), 1)
+	fit_right = np.polyfit((br[0], tr[0]), (br[1], tr[1]), 1)
+	fit_bottom = np.polyfit((bl[0], br[0]), (bl[1], br[1]), 1)
+	fit_top = np.polyfit((tl[0], tr[0]), (tl[1], tr[1]), 1)
+
+	# Find the region inside the lines
+	xs, ys = np.meshgrid(np.arange(0, image.shape[1]), np.arange(0, image.shape[0]))
+	mask = (ys > (xs * fit_left[0] + fit_left[1])) & \
+           (ys > (xs * fit_right[0] + fit_right[1])) & \
+           (ys > (xs * fit_top[0] + fit_top[1])) & \
+           (ys < (xs * fit_bottom[0] + fit_bottom[1]))
+	
+	img_window = np.copy(image)
+	img_window[mask == False] = 0
+
+	return img_window
+```
+
+
+### Perspective transform
 
 The perspective transform changes the image such that you get a bird's eye view. This is important in order to determine lane curvature. 
 
