@@ -25,6 +25,7 @@ The goals/steps I'll explain in depth are:
 [image7]: ./readme_assets/birdsview_images.png "Birdsview images"
 [image8]: ./readme_assets/lanes_images.png "Lanes images"
 [image9]: ./readme_assets/final_images.png "Final images"
+[image10]: ./readme_assets/video.gif "Video"
 
 
 ### Files and project navigation 
@@ -119,9 +120,7 @@ I made use of 3 different edge detection techniques - the absolute Sobel thresho
 
 ![alt text][image3]
 
-I also used a magnitude Sobel threshold which uses a combination of the absole sobel threshold in the X and Y direction. I found this one to work well, but not as well as the simple Sobel X operator. 
-
-Lastly, I used the directional Sobel threshold, where I calculated the arctan of (Sobel X/Sobel Y) to constrain the search for gradients in a specific direction. I found this technique to be unnecessarily complex compared to the simple Sobel X operator. 
+I also used a magnitude Sobel threshold which uses a combination of the absole sobel threshold in the X and Y direction. I found this one to work well, but not as well as the simple Sobel X operator. Lastly, I used the directional Sobel threshold, where I calculated the arctan of (Sobel X/Sobel Y) to constrain the search for gradients in a specific direction. I found this technique to be unnecessarily complex compared to the simple Sobel X operator. 
 
 ```python
 def abs_sobel_thresh(image, orient = 'x', sobel_kernel=3, thresh = (0.7,5)):
@@ -409,9 +408,9 @@ def final_image(image, persp_transform_image, ploty, leftx_base, left_fit, left_
 ### Video pipeline
 In `pipeline.py`, there are two functions defined. The first, `process_frame(image)` applies the steps described above in sequence to a frame. The second function, `process_video(input_path, output_path)`, applies the processing function to each frame, and saves a video of the output file. 
 
-
+![alt text][image10]
 ### Discussion
-The video pipeleine did a great job of detecting lane lines. It also worked well on videos where lighting conditions varied, and on videos where multiple sharp turns happened in sequence. 
+The video pipeline did a great job of detecting lane lines. It also worked well on videos where lighting conditions varied, and on videos where multiple sharp turns happened in sequence. 
 
 Other improvments I'd like to make are: 
 * When doing color space thresholding, doing the thresholding on all 3 dimensions rather than just one.
