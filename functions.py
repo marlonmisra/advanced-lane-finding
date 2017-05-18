@@ -186,7 +186,7 @@ def find_lanes(trans):
 	left_lane_indices = []
 	right_lane_indices = []
 
-	#step through windows one by one
+	#go through windows one by one
 	for window in range(nwindows):
 	    # Identify window boundaries in x and y (and right and left)
 	    win_y_low = trans.shape[0] - (window+1)*window_height

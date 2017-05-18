@@ -68,7 +68,7 @@ def process_video(input_path, output_path):
 	output_clip = input_file.fl_image(process_frame)
 	output_clip.write_videofile(output_path, audio=False)
 
-#process_video('test_videos/test_video_2.mp4', 'test_videos_results/test_video_2_annotated.mp4')
+process_video('test_videos/test_video_4.mp4', 'test_videos_results/test_video_4_annotated.mp4')
 
 
 
