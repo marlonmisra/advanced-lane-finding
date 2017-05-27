@@ -2,7 +2,7 @@
 
 
 ### Introduction 
-I previously worked on a [lane finding project](https://github.com/marlonmisra/lane-finding) where I built a simple pipeline that detects lanes on front-facing car video footage. The goal remains the same, but here I'm using more advanced techniques to make the model more robust. Robust in this context means that the pipeline should perform well in poorer lighting conditions, worse weather conditions, and is agnostic to the color of the lane lines. Rather than just predict linear lane lines, this time I'll also predict the curvature of the lanes. 
+I previously worked on a [lane finding project](https://github.com/marlonmisra/lane-finding) where I built a simple pipeline that detects lanes on front-facing car video footage. The goal remains the same, but here I'm using more advanced techniques to make the model more robust. Robust means that the pipeline should perform well in poorer lighting conditions, worse weather conditions, and is agnostic to the color of the lane lines. Rather than just predict linear lane lines, this time I'll also predict the curvature of the lanes. 
 
 The goals/steps I'll explain in depth are: 
 * Applying distortion correction to raw camera images to remove the effects that lenses have on images. 
@@ -41,17 +41,17 @@ The project includes the following files:
 
 Most cameras distort images in some way. Although the effects are usually minor, it's important that we account for it so that we can later calculate lane curvature correctly. 
 
-To determine the extent of lens distortion, I used a common technique to determine a transformation function that can be used to undistort an image. The technique works by taking images of chess boards, specifying how many chessboard corners are on the images, and using the OpenCV function `cv2.findChessboardCorners` to compare the position of where the corners should be vs. where they are found on the image. More specifically, I prepared "object points" which are the 3D (x,y,z) coordinates of the chessboard corners in the real world (z=0) and compared these with "image points" which I detected with the function above. Using the image points and object points, I could then use the OpenCV function `cv2.calibrateCamera()` to get a set of coefficients to undistort any other image. Finally I used `cv2.undistort()` on my test images. Note that the distortion mostly impacted the edges of the images. 
+To determine the extent of lens distortion, I used a common technique to determine a transformation function that can be used to undistort an image. The technique works by taking images of chess boards, specifying how many chessboard corners are on the images, and using the OpenCV function `cv2.findChessboardCorners` to compare the position of where the corners should be vs. where they are found on the image. More specifically, I prepared "object points" which are the 3D (x,y,z) coordinates of the chessboard corners in the real world (z=0) and compared these with "image points" which I detected with the function above. Using the image points and object points, I could then use the OpenCV function `cv2.calibrateCamera()` to get a set of coefficients to undistort any other image. Finally I used `cv2.undistort()` on my test images. Note that the distortion mostly impacted the edges of the images, especially the bottom area I highlighted with a red box below. 
 
 ![alt text][image1]
 
 
 ```python
-#corners
+#corners on chess boards
 nx, ny = 9, 6
 channels = 3
 
-#calibration image list
+#chess board images
 image_names = glob.glob('./camera_cal/calibration*.jpg')
 
 #imgpoints and objpoints
