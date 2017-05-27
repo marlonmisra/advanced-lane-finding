@@ -218,6 +218,8 @@ def combine_threshs(hls_thresh_1, abs_sobel_thresh_1):
 
 Up until this point, the goal of the binary thresholding was more focused on identifying pixels that belonged the lanes rather than minimizing false positives. One way to effectively reduce false positives now is to apply a region of interest window that sets all pixels outside of it to 0. These are pixels on the far left and right and near the top where the sky is. The region of interest area looks like a trapezoid and is defined below. 
 
+![alt text][image5]
+
 ![alt text][image6]
 
 ```python
@@ -257,6 +259,7 @@ dst = np.float32([(200, 720), (1080, 720), (200, 0), (1080, 0)])
 M = cv2.getPerspectiveTransform(src, dst) 
 Minv = cv2.getPerspectiveTransform(dst, src)
 ```
+![alt text][image6]
 
 ![alt text][image7]
 
@@ -264,6 +267,8 @@ Minv = cv2.getPerspectiveTransform(dst, src)
 ### Identifying lane line pixels and fitting a polynomial
 
 In order to identify lane pixels, I started by creating a historgram for the bottom half of the transformed image and found the midpoint of the lane by taking the average of the two peaks. Then I utilized a sliding window approach to determine the location of the lanes as you go further away form the car. Once I had the windows and lane centers, I drew two second-order polynomials on the image to indicate the lane lines. 
+
+![alt text][image7]
 
 ![alt text][image8]
 
@@ -374,6 +379,8 @@ def pos_from_center(trans, leftx_base, rightx_base):
 ### Final image after undoing the transformation 
 
 To get the final image, I warped the birds-view image back into the original space. And then I drew the lanes and filled the area in between using the `fillPoly` function. 
+
+![alt text][image8]
 
 ![alt text][image9]
 
