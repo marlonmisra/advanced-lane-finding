@@ -110,13 +110,13 @@ def undistort_image(image):
 
 **Approach**
 
-A thresholded binary image an image that only has 2 types of pixels - pixels which make up the lane and pixels which don't. To create a thresholded binary image, I did 2 things - (1) detect lane pixels by using edge detection, and (2) detect lane pixels by using different color spaces. Below is an image that shows all the transformations I looked at for exploratory analysis. 
+The thresholded binary image aims to only has 2 types of pixels - pixels which make up the lane and pixels which don't. To create a thresholded binary image, I did 2 things. First, I tried to detect lane pixels by using various edge detection techniques. Second, I detected lane pixels by convering to different color spaces different color spaces. Below is an image that shows all the transformations I looked at for exploratory analysis. I'll later explain how I used combinations of these images to creat the thresholded binary image. 
 
 ![alt text][image2]
 
 **Edge detection**
 
-I made use of 3 different edge detection techniques - the absolute Sobel threshold, the magnitude Sobel threshold, and the directional Sobel threshold. For the absolute Sobel threshold, you can either use a kernel to detect changes in the X direction or Y direction. I found the X direction to work best because lane lines are most visible as you look at the image from left to right. The way the absolute Sobel X operator works is that it defines a small NxN matrix which is moved across the whole image. The NxN matrix has values such that when you multiply them by the values of the image below you get a number which tells you about the gradient. For this to work the Soble operator is defined as follows for a small kernel of 2. 
+I made use of 3 different edge detection techniques - the absolute Sobel threshold, the magnitude Sobel threshold, and the directional Sobel threshold. For the absolute Sobel threshold, you can either use a kernel to detect changes in the X direction or Y direction. I found that the X direction works best because lane lines are most visible as you look at the image from left to right. The way the absolute Sobel X operator works is that it defines a small NxN matrix which is moved across the whole image. The NxN matrix has values such that when you multiply them by the values of the image below you get a number which tells you about the gradient. For this to work the Sobel operator is defined as follows for a small kernel of 3. 
 
 ![alt text][image3]
 
@@ -172,7 +172,7 @@ def dir_thresh(image, sobel_kernel=3, thresh=(0, np.pi/2)):
 
 **Color transforms**
 
-I experimented with several color spaces and parameters to see if any of them were particularly useful. In total I looked at 4 space - the RGB (reg/green/blue) space, the HLS (hue/lightness/saturation) space, the HSV (hue/saturation/value) space, and the YCrCb (luma/blue-difference chroma component)/(red-difference chroma component) space. For each space, I defined the function in a way such that I could set a lower and upper bound on the value I want to filter by. Overall, the HLS space gave the best results, and it was specifically the S or saturation component that worked most robustly in different lighting conditions. I'm only giving a code example of the HLS conversion function below because they were all implemented in the same way (OpenCV has simple functions to convert from RGB space to others. 
+I experimented with several color spaces and parameters to see if any of them were particularly useful. In total I looked at 4 spaces - the RGB (reg/green/blue) space, the HLS (hue/lightness/saturation) space, the HSV (hue/saturation/value) space, and the YCrCb (luma/blue-difference chroma component)/(red-difference chroma component) space. For each space, I defined the function in a way such that I could set a lower and upper bound on the value I want to filter by. Overall, the HLS space gave the best results, and it was specifically the S or saturation component that worked most robustly in different lighting conditions. I'm only giving a code example of the HLS conversion function below because they were all implemented in the same way (OpenCV has simple functions to convert from RGB space to others. 
 
 ```python
 def hls_thresh(image, channel="h", thresh=(0, 50)):
