@@ -69,7 +69,7 @@ Binary threshold images only have 2 types of pixels - pixels which make up what 
 
 **Edge detection**
 
-I made use of 3 different edge detection techniques - the absolute Sobel threshold, the magnitude Sobel threshold, and the directional Sobel threshold. For the absolute Sobel threshold, you I explored the Sobel X and Sobel Y operator. I found that the X direction works best because lane lines are most visible as you look at gradients from left to right. The absolute Sobel operator works by moving a NxN filter across the image and computing the dot product between the filter and the image values. This dot product represents the gradient at that point. The Sobel X  and Sobel Y operators are defined as follows for a filter size of 3. 
+I made use of 3 different edge detection techniques - the absolute Sobel threshold, the magnitude Sobel threshold, and the directional Sobel threshold. For the absolute Sobel threshold, I explored the Sobel X and Sobel Y operator. I found that the X direction works best because lane lines are most visible as you look at gradients from left to right. The absolute Sobel operator works by moving a NxN filter across the image and computing the dot product between the filter and the image values. This dot product represents the gradient at that point. The Sobel X  and Sobel Y operators are defined as follows for a filter size of 3. 
 
 ![alt text][image3]
 
@@ -126,7 +126,7 @@ def dir_thresh(image, sobel_kernel=3, thresh=(0, np.pi/2)):
 
 **Color transforms**
 
-I experimented with several color spaces and parameters to see if any of them were particularly useful. In total I looked at 4 spaces - the RGB (reg/green/blue) space, the HLS (hue/lightness/saturation) space, the HSV (hue/saturation/value) space, and the YCrCb (luma/blue-difference chroma component)/(red-difference chroma component) space. For each space, I defined the function in a way such that I could set a lower and upper bound on the value I want to filter by. Overall, the HLS space gave the best results, and it was specifically the S or saturation component that worked most robustly in different lighting conditions. I'm only giving a code example of the HLS conversion function below because they were all implemented in the same way (OpenCV has simple functions to convert from RGB space to others. 
+I expolored several color spaces and threshold combinations to determine which worked best. In total I looked at 4 spaces - the RGB (reg/green/blue) space, the HLS (hue/lightness/saturation) space, the HSV (hue/saturation/value) space, and the YCrCb (luma/blue-difference chroma component)/(red-difference chroma component) space. For each space, I defined the function in a way such that I could set a lower and upper bound on the value I want to filter by. Overall, the HLS space gave the best results, and it was specifically the S or saturation component that worked most robustly in different lighting conditions. I'm only giving a code example of the HLS conversion function below because they were all implemented in the same way (OpenCV has simple functions to convert from RGB space to others. 
 
 ```python
 def hls_thresh(image, channel="h", thresh=(0, 50)):
