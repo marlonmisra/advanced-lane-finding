@@ -221,7 +221,7 @@ Minv = cv2.getPerspectiveTransform(dst, src)
 
 ### Identifying lane line pixels and fitting a polynomial
 
-In order to identify lane pixels, I started by creating a histogram for the bottom half of the transformed image and found the midpoint of the lane by taking the average of the two peaks. Then I utilized a sliding window approach to determine the location of the lanes as you go further away form the car. Once I had the windows and lane centers, I drew two second-order polynomials on the image to indicate the lane lines. 
+In order to identify lane pixels, I started by creating a histogram for the bottom half of the transformed image and found the points at which the 2 lanes start. Then I utilized a sliding window approach to determine the location of the lanes as you move up on the image. Once I had the windows and lane centers, I drew two second-order polynomials on the image to indicate the lane lines. 
 
 ![alt text][image10]
 
@@ -355,7 +355,7 @@ def final_image(image, persp_transform_image, ploty, leftx_base, left_fit, left_
 	# Warp the blank back to original image space using inverse perspective matrix (Minv)
 	newwarp = cv2.warpPerspective(color_warp, Minv, (persp_transform_image.shape[1], persp_transform_image.shape[0])) 
 
-    #Combine the result with the original image
+	#Combine the result with the original image
 	result = cv2.addWeighted(image, 1, newwarp, 0.3, 0)
 
 	#info strings

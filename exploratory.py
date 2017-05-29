@@ -121,7 +121,7 @@ def plot_all(images = [], birds_view_images = [], option = 'transformation'):
 	plt.show()
 	#plt.savefig('readme_assets/image.png', bbox_inches='tight', cmap='gray')
 
-plot_all(images = histogram_images, option = 'histogram') #plot transformations
+#plot_all(images = histogram_images, option = 'histogram') #plot transformations
 #plot_all(images = images, birds_view_images = birds_view_images, option = 'lanes') #plot lane lines images
 #plot_all(images = images, birds_view_images = birds_view_images, option = 'final') #plot final images
 
