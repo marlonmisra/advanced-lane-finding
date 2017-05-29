@@ -45,7 +45,7 @@ The project includes the following files:
 
 Most cameras distort images in some way. Although the effects are usually minor, it's important that we account for it so that we can later calculate lane curvature correctly. The effect of distortion is most visibile in the area I highlighted with the red box, near the bottom of the image. 
 
-To determine the transformation function that undistorts an image, I used a common technique that relies the analysis of standard images. In the camera_calibration folder, 20 images of chess board were provided each of which was taken from a different perspective. Since chess boards have a fixed number of intersections and a fixed structure (90 degree line intersections at each corner), they are great for determining transformation functions to reverse lens distortion. I'm leaving out the details of the implementation but they are easy to follow in the calibration/calibration.py file. In the end, the procedure yielded a set of coefficient (`mtx` and `dist` below) that can be used with the `cv2.undistort()` function. 
+To determine the transformation function that undistorts an image, I used a common technique that relies the analysis of standard images. In the camera_calibration folder, 20 images of chess boards were provided each of which was taken from a different perspective. Since chess boards have a fixed number of intersections and a fixed structure (90 degree line intersections at each corner), they are great for determining transformation functions to reverse lens distortion. I'm leaving out the details of the implementation but they are easy to follow in the calibration/calibration.py file. In the end, the procedure yielded a set of coefficient (`mtx` and `dist` below) that can be used with the `cv2.undistort()` function. 
 
 ![alt text][image1]
 
@@ -63,7 +63,7 @@ def undistort_image(image):
 
 **Approach**
 
-The thresholded binary image aims to only has 2 types of pixels - pixels which make up the lane and pixels which don't. To create a thresholded binary image, I did 2 things. First, I tried to detect lane pixels by using various edge detection techniques. Second, I detected lane pixels by convering to different color spaces different color spaces. Below is an image that shows all the transformations I looked at for exploratory analysis. I'll later explain how I used combinations of these images to creat the thresholded binary image. 
+Binary threshold images only have 2 types of pixels - pixels which make up what you care about and pixels which don't. To create a thresholded binary image that highlights the lanes, I did 2 things. First, I tried to detect lane pixels by using various edge detection techniques. Second, I detected lane pixels by convering to different color spaces. Below is an image that shows all the transformations I looked at for exploratory analysis. I'll later explain how I used a combination of these thresholded binary images to create an image which included all the lane pixels but excluded everything else. 
 
 ![alt text][image2]
 
