@@ -20,12 +20,16 @@ The goals/steps I'll explain in depth are:
 [image2]: ./readme_assets/transformations.png "Transformations"
 [image3]: ./readme_assets/sobel.gif "Sobel"
 [image4]: ./readme_assets/original_images.png "Original images"
-[image5]: ./readme_assets/combined_images.png "Combined images"
-[image6]: ./readme_assets/windowed_images.png "Windowed images"
-[image7]: ./readme_assets/birdsview_images.png "Birdsview images"
-[image8]: ./readme_assets/lanes_images.png "Lanes images"
-[image9]: ./readme_assets/final_images.png "Final images"
-[image10]: ./readme_assets/video.gif "Video"
+[image5]: ./readme_assets/combined_images_no_label.png "Combined images no label"
+[image6]: ./readme_assets/combined_images.png "Combined images"
+[image7]: ./readme_assets/windowed_images_no_label.png "Windowed images no label"
+[image8]: ./readme_assets/windowed_images.png "Windowed images"
+[image9]: ./readme_assets/birdsview_images_no_label.png "Birdsview images no label"
+[image10]: ./readme_assets/birdsview_images.png "Birdsview images"
+[image11]: ./readme_assets/detections_no_label.png "Detections no label"
+[image12]: ./readme_assets/detections.png "Detections"
+[image13]: ./readme_assets/final_images_no_label.png "Final images no label"
+[image14]: ./readme_assets/video.gif "Video"
 
 
 ### Files and project navigation 
@@ -218,9 +222,9 @@ def combine_threshs(hls_thresh_1, abs_sobel_thresh_1):
 
 Up until this point, the goal of the binary thresholding was more focused on identifying pixels that belonged the lanes rather than minimizing false positives. One way to effectively reduce false positives now is to apply a region of interest window that sets all pixels outside of it to 0. These are pixels on the far left and right and near the top where the sky is. The region of interest area looks like a trapezoid and is defined below. 
 
-![alt text][image5]
-
 ![alt text][image6]
+
+![alt text][image7]
 
 ```python
 def filterf(image):
@@ -259,18 +263,18 @@ dst = np.float32([(200, 720), (1080, 720), (200, 0), (1080, 0)])
 M = cv2.getPerspectiveTransform(src, dst) 
 Minv = cv2.getPerspectiveTransform(dst, src)
 ```
-![alt text][image6]
+![alt text][image8]
 
-![alt text][image7]
+![alt text][image9]
 
 
 ### Identifying lane line pixels and fitting a polynomial
 
 In order to identify lane pixels, I started by creating a historgram for the bottom half of the transformed image and found the midpoint of the lane by taking the average of the two peaks. Then I utilized a sliding window approach to determine the location of the lanes as you go further away form the car. Once I had the windows and lane centers, I drew two second-order polynomials on the image to indicate the lane lines. 
 
-![alt text][image7]
+![alt text][image10]
 
-![alt text][image8]
+![alt text][image11]
 
 ```python
 def find_lanes(trans):
@@ -380,9 +384,9 @@ def pos_from_center(trans, leftx_base, rightx_base):
 
 To get the final image, I warped the birds-view image back into the original space. And then I drew the lanes and filled the area in between using the `fillPoly` function. 
 
-![alt text][image8]
+![alt text][image12]
 
-![alt text][image9]
+![alt text][image13]
 
 ```python
 def final_image(image, persp_transform_image, ploty, leftx_base, left_fit, left_fitx, rightx_base, right_fit, right_fitx, Minv):
@@ -415,7 +419,7 @@ def final_image(image, persp_transform_image, ploty, leftx_base, left_fit, left_
 ### Video pipeline
 In `pipeline.py`, there are two functions defined. The first, `process_frame(image)` applies the steps described above in sequence to a frame. The second function, `process_video(input_path, output_path)`, applies the processing function to each frame, and saves a video of the output file. 
 
-![alt text][image10]
+![alt text][image14]
 
 ### Discussion
 The video pipeline did a great job of detecting lane lines. It also worked well on videos where lighting conditions varied, and on videos where multiple sharp turns happened in sequence. 

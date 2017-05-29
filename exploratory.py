@@ -35,6 +35,7 @@ Minv = cv2.getPerspectiveTransform(dst, src)
 
 #IMAGE TRANSFORMATIONS
 undistorted_images = [undistort_image(image) for image in images]
+undistorted_drawn_images = [undistort_image_rectangle(undistorted_image) for undistorted_image in undistorted_images]
 abs_sobel_thresh_images = [abs_sobel_thresh(undistorted_image, orient=abs_sobel_orient, sobel_kernel = abs_sobel_kernel, thresh= abs_sobel_threshold) for undistorted_image in undistorted_images]
 mag_thresh_images = [mag_thresh(undistorted_image, sobel_kernel = mag_sobel_kernel, thresh= mag_sobel_threshold) for undistorted_image in undistorted_images]
 dir_thresh_images = [dir_thresh(undistorted_image, sobel_kernel = dir_sobel_kernel, thresh= dir_sobel_threshold) for undistorted_image in undistorted_images]
@@ -51,8 +52,7 @@ progress = [images, undistorted_images, abs_sobel_thresh_images, mag_thresh_imag
 #PLOT CALIBRATION
 def plot_calibration():
 	distorted = images[0]
-	undistorted = undistorted_images[0]
-	undistorted_drawn = cv2.rectangle(np.copy(undistorted), pt1=(0,img_size[1]), pt2=(img_size[0],img_size[1]-100), color=(255,0,0), thickness=3)
+	undistorted_drawn = undistorted_drawn_images[0]
 	labels = ['Distorted', 'Undistorted']
 	fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2, figsize = (10,3))
 	fig.tight_layout()
@@ -85,19 +85,19 @@ def plot_progress(progress, test_image_number):
 
 #PLOT ALL
 def plot_all(images = [], birds_view_images = [], option = 'transformation'):
-	labels = ["Yellow and white", "Straight white", "Poor lighting", "Yellow and white curved", "Yellow and white curved 2", "Very poor lighting 1", "Very poor lighting 2", "Very poor lighting 3"]
-	fig, axes = plt.subplots(nrows=2, ncols=2, figsize = (10,6))
+	labels = ["Yellow and white", "Yellow and white curved", "Poor lighting", "Straight white", "Yellow and white curved 2", "Very poor lighting 1", "Very poor lighting 2", "Very poor lighting 3"]
+	fig, axes = plt.subplots(nrows=1, ncols=2, figsize = (10,3))
 	axes = axes.ravel()
 	fig.tight_layout()
 
 	if option == 'transformation':
-		for ax, image, label in zip(axes, images[:4], labels[:4]):
+		for ax, image, label in zip(axes, images[0:2], labels[0:2]):
 			ax.imshow(image, cmap='gray')
 			ax.set_title(label)
 			ax.axis('off')
 
 	elif option == 'lanes':
-		for ax, birds_view_image, label in zip(axes, birds_view_images[:4], labels[:4]):
+		for ax, birds_view_image, label in zip(axes, birds_view_images[:2], labels[:2]):
 			out_img, ploty, left_fit, left_fitx, leftx_base, right_fit, right_fitx, rightx_base = find_lanes(birds_view_image)
 			ax.imshow(out_img)
 			ax.set_title(label)
@@ -106,7 +106,7 @@ def plot_all(images = [], birds_view_images = [], option = 'transformation'):
 			ax.axis('off')
 
 	elif option == 'final':
-		for ax, image, birds_view_image,label in zip(axes, images, birds_view_images[:4], labels[:4]):
+		for ax, image, birds_view_image,label in zip(axes, images, birds_view_images[:2], labels[:2]):
 			out_img, ploty, left_fit, left_fitx, leftx_base, right_fit, right_fitx, rightx_base = find_lanes(birds_view_image)
 			result = final_image(image, birds_view_image, ploty, leftx_base, left_fit, left_fitx, rightx_base, right_fit, right_fitx, Minv)
 			ax.imshow(result)

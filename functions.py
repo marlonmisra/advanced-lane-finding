@@ -21,6 +21,11 @@ def undistort_image(image):
 	undist = cv2.undistort(image,mtx,dist,None,mtx)
 	return undist
 
+def undistort_image_rectangle(image):
+	img_size = (image.shape[1], image.shape[0])
+	undistorted_drawn = cv2.rectangle(np.copy(image), pt1=(0,img_size[1]), pt2=(img_size[0],img_size[1]-100), color=(255,0,0), thickness=3)
+	return undistorted_drawn
+
 def abs_sobel_thresh(image, orient = 'x', sobel_kernel=3, thresh = (0.7,5)):
 	gray = cv2. cvtColor(image, cv2.COLOR_RGB2GRAY)
 
@@ -156,7 +161,7 @@ def transform_image(windowed_image, M, img_size):
 
 def find_lanes(trans):
 	#create historgram for bottom half of trans
-	hist = np.sum(trans[trans.shape[0]/2:,:], axis=0) 
+	hist = np.sum(trans[int(trans.shape[0]/2):,:], axis=0) 
 	#output image to draw on + visualize
 	out_img = np.dstack((trans, trans, trans))*255
 	#peaks of left + right halves if hist	
