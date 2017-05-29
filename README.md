@@ -63,17 +63,17 @@ def undistort_image(image):
 
 **Approach**
 
-Binary threshold images only have 2 types of pixels - pixels which make up what you care about and pixels which don't. To create a thresholded binary image that highlights the lanes, I did 2 things. First, I tried to detect lane pixels by using various edge detection techniques. Second, I detected lane pixels by convering to different color spaces. Below is an image that shows all the transformations I looked at for exploratory analysis. I'll later explain how I used a combination of these thresholded binary images to create an image which included all the lane pixels but excluded everything else. 
+Binary threshold images only have 2 types of pixels - pixels which make up what you care about and pixels which don't. To create a thresholded binary image that highlights the lanes, I did 2 things. First, I detected lane pixels by using various edge detection techniques. Second, I detected lane pixels by looking at different color spaces. Below is an image that shows all the transformations I looked at for exploratory analysis. I'll later explain how I used a combination of these thresholded binary images to create a final thresholded binary image that does a good job of including lane pixels and excluding other pixels. 
 
 ![alt text][image2]
 
 **Edge detection**
 
-I made use of 3 different edge detection techniques - the absolute Sobel threshold, the magnitude Sobel threshold, and the directional Sobel threshold. For the absolute Sobel threshold, you can either use a kernel to detect changes in the X direction or Y direction. I found that the X direction works best because lane lines are most visible as you look at the image from left to right. The way the absolute Sobel X operator works is that it defines a small NxN matrix which is moved across the whole image. The NxN matrix has values such that when you multiply them by the values of the image below you get a number which tells you about the gradient. For this to work the Sobel operator is defined as follows for a small kernel of 3. 
+I made use of 3 different edge detection techniques - the absolute Sobel threshold, the magnitude Sobel threshold, and the directional Sobel threshold. For the absolute Sobel threshold, you can either use a kernel to detect changes in the X direction or Y direction. I found that the X direction works best because lane lines are most visible as you look at the image from left to right. The absolute Sobel operator works by moving a NxN filter across the image and computing the dot product between the filter and values of the image. Depending on the values of the filter, the dot product represents the gradient at that point in the image. For example, the Sobel X  and Sobel Y operators are defined as follows for a filter size of 3. 
 
 ![alt text][image3]
 
-I also used a magnitude Sobel threshold which uses a combination of the absole sobel threshold in the X and Y direction. I found this one to work well, but not as well as the simple Sobel X operator. Lastly, I used the directional Sobel threshold, where I calculated the arctan of (Sobel X/Sobel Y) to constrain the search for gradients in a specific direction. I found this technique to be unnecessarily complex compared to the simple Sobel X operator. 
+I also used a magnitude Sobel threshold which uses a combination of the absole sobel threshold in the X and Y direction. I found this one to work well, but not as well as the standard Sobel X operator. Lastly, I also used the directional Sobel threshold, where I calculated the arctan of (Sobel X/Sobel Y) to constrain the search for gradients in a specific direction. This technique showed some promise, but I was unable to find parameters (kernel and threshold) that worked really well for this problem. 
 
 ```python
 def abs_sobel_thresh(image, orient = 'x', sobel_kernel=3, thresh = (0.7,5)):
@@ -169,7 +169,7 @@ def combine_threshs(hls_thresh_1, abs_sobel_thresh_1):
 
 ### Region of interest
 
-Up until this point, the goal of the binary thresholding was more focused on identifying pixels that belonged the lanes rather than minimizing false positives. One way to effectively reduce false positives now is to apply a region of interest window that sets all pixels outside of it to 0. These are pixels on the far left and right and near the top where the sky is. The region of interest area looks like a trapezoid and is defined below. 
+Up until this point, the goal of the binary thresholding was more focused on identifying pixels that belonged to lane markings rather than minimizing false positives. One way to effectively reduce false positives is to apply a region of interest mask that sets all pixels outside of it to 0. These are pixels on the far left and right and near the top where the sky is. The region of interest area looks like a trapezoid and is defined below. 
 
 ![alt text][image6]
 
