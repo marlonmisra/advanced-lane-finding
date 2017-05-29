@@ -6,10 +6,10 @@ I previously worked on a [lane finding project](https://github.com/marlonmisra/l
 
 The goals/steps I'll explain in depth are: 
 * Applying distortion correction to raw camera images to remove the effects that lenses have on images. 
+* Using different versions of the Sobel operator for edge detection, including the X and Y Sobel threshold, the magnitude Sobel threshold, and the directional Sobel threshold. 
 * Exploring different color spaces, including RGB, HLS, HSV, and YCrCb, and choosing the combination that works best together.
-* Using convolutional techniques like the Soble operator for edge detection. 
 * Applying a perspective transform to get a birds-eye view of the lanes such that it's easier to determine lane curvature.
-* Detecting pixels that belong the lane using a convolutional technique. 
+* Detecting pixels that belong the lane using a moving window technique.  
 * Using the location of the lane pixels to fit a polynomial that matches the curvature of the lane. 
 * Outputting the curvature of the lane and vehicle position with respect to center.
 * Warping the images back into the original space and visually identifying the lane markings and the lane area in between. 
