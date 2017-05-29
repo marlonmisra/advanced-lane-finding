@@ -131,18 +131,18 @@ I expolored several color spaces and threshold combinations to determine which w
 
 ```python
 def hls_thresh(image, channel="h", thresh=(0, 50)):
-    hls = cv2.cvtColor(image, cv2.COLOR_RGB2HLS)
+	hls = cv2.cvtColor(image, cv2.COLOR_RGB2HLS)
 
-    if channel=="h":
-        threshold_channel = hls[:,:,0]
-    if channel=="l":
-        threshold_channel = hls[:,:,1]
-    if channel=="s":
-        threshold_channel = hls[:,:,2]
+	if channel=="h":
+	    threshold_channel = hls[:,:,0]
+	if channel=="l":
+	    threshold_channel = hls[:,:,1]
+	if channel=="s":
+	    threshold_channel = hls[:,:,2]
 
-    hls_threshold = np.zeros_like(threshold_channel)
-    hls_threshold[(threshold_channel > thresh[0]) & (threshold_channel < thresh[1])] = 1
-    return hls_threshold
+	hls_threshold = np.zeros_like(threshold_channel)
+	hls_threshold[(threshold_channel > thresh[0]) & (threshold_channel < thresh[1])] = 1
+	return hls_threshold
 ```
 
 
