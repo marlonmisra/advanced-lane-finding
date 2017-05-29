@@ -12,7 +12,7 @@ The goals/steps I'll explain in depth are:
 * Detecting pixels that belong the lane using a moving window technique.  
 * Using the location of the lane pixels to fit a polynomial that matches the curvature of the lane. 
 * Outputting the curvature of the lane and vehicle position with respect to center.
-* Warping the images back into the original space and visually identifying the lane markings and the lane area in between. 
+* Warping the images back into the original perspective and visually identifying the lane markings and the lane area in between. 
 
 [//]: # (Image References)
 
