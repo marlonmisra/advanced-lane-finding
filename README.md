@@ -92,20 +92,6 @@ def abs_sobel_thresh(image, orient = 'x', sobel_kernel=3, thresh = (0.7,5)):
 
 	return abs_sobel_thresh
 
-def mag_thresh(image, sobel_kernel=3, thresh=(1, 5)):
-	gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
-
-	sobelx = cv2.Sobel(gray, cv2.CV_64F, 1, 0 ,ksize = sobel_kernel)
-	sobely = cv2.Sobel(gray, cv2.CV_64F, 0, 1 ,ksize = sobel_kernel)
-
-	sobel_magnitude = np.sqrt(sobelx**2 + sobely**2)
-	scaled_magnitude = np.uint8(255*sobel_magnitude/np.max(sobel_magnitude))
-
-	mag_thresh = np.zeros_like(scaled_magnitude)
-	mag_thresh[(scaled_magnitude > thresh[0]) & (scaled_magnitude < thresh[1])] = 1
-
-	return mag_thresh
-
 def dir_thresh(image, sobel_kernel=3, thresh=(0, np.pi/2)):
     gray = cv2. cvtColor(image, cv2.COLOR_RGB2GRAY)
 
@@ -121,6 +107,22 @@ def dir_thresh(image, sobel_kernel=3, thresh=(0, np.pi/2)):
     dir_threshold[(directions > thresh[0]) & (directions < thresh[1])] = 1
 
     return dir_threshold
+    
+def mag_thresh(image, sobel_kernel=3, thresh=(1, 5)):
+	gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+
+	sobelx = cv2.Sobel(gray, cv2.CV_64F, 1, 0 ,ksize = sobel_kernel)
+	sobely = cv2.Sobel(gray, cv2.CV_64F, 0, 1 ,ksize = sobel_kernel)
+
+	sobel_magnitude = np.sqrt(sobelx**2 + sobely**2)
+	scaled_magnitude = np.uint8(255*sobel_magnitude/np.max(sobel_magnitude))
+
+	mag_thresh = np.zeros_like(scaled_magnitude)
+	mag_thresh[(scaled_magnitude > thresh[0]) & (scaled_magnitude < thresh[1])] = 1
+
+	return mag_thresh
+
+
 ```
 
 **Color transforms**
