@@ -43,63 +43,12 @@ The project includes the following files:
 
 ### Undistortion
 
-Most cameras distort images in some way. Although the effects are usually minor, it's important that we account for it so that we can later calculate lane curvature correctly. 
+Most cameras distort images in some way. Although the effects are usually minor, it's important that we account for it so that we can later calculate lane curvature correctly. The effect of distortion is most visibile in the area I highlighted with the red box, near the bottom of the image. 
 
-To determine the extent of lens distortion, I used a common technique to determine a transformation function that can be used to undistort an image. The technique works by taking images of chess boards, specifying how many chessboard corners are on the images, and using the OpenCV function `cv2.findChessboardCorners` to compare the position of where the corners should be vs. where they are found on the image. More specifically, I prepared "object points" which are the 3D (x,y,z) coordinates of the chessboard corners in the real world (z=0) and compared these with "image points" which I detected with the function above. Using the image points and object points, I could then use the OpenCV function `cv2.calibrateCamera()` to get a set of coefficients to undistort any other image. Finally I used `cv2.undistort()` on my test images. Note that the distortion mostly impacted the edges of the images, especially the bottom area I highlighted with a red box below. 
+To determine the transformation function that undistorts an image, I used a common technique that relies the comparison of standard image. In the camera_calibration folder, 20 images of chess board were provided each of which was taken from a different perspective. Since chess boards have a fixed number of points, a fixed structure (90 degree line intersections at each corner), they are great for determining transformation functions to reverse lens distortion. I'm leaving out the details of the implementation but they are easy to follow in the /calbiration/calibration.py file. In the end, the procedure yields a set of coefficient (`mtx` and `dist` below) that can be used with the `cv2.undistort()` function. 
 
 ![alt text][image1]
 
-
-```python
-#corners on chess boards
-nx, ny = 9, 6
-channels = 3
-
-#chess board images
-image_names = glob.glob('./camera_cal/calibration*.jpg')
-
-#imgpoints and objpoints
-imgpoints = [] #2D in image plane
-objpoints = [] #3D in real life, all same
-objp = np.zeros((ny * nx, channels), np.float32)
-objp[:, :2] = np.mgrid[0:nx, 0:ny].T.reshape(-1, 2) #x, y coordinates
-
-
-#loop through
-for idx, image_name in enumerate(image_names):
-		cal_img = mpimg.imread(image_name)
-		cal_img_gray = cv2.cvtColor(cal_img,cv2.COLOR_BGR2GRAY)
-
-		#get corners
-		ret, corners = cv2.findChessboardCorners(cal_img_gray, (nx, ny), None)
-
-		#add to object and image points
-		if ret == True:
-			print("Got corners for image ", str(idx))
-			imgpoints.append(corners)
-			objpoints.append(objp)
-
-			#draw and display corners
-			cv2.drawChessboardCorners(cal_img, (nx, ny), corners, ret)
-			write_path = "./camera_cal_corners/calibration" + str(idx) + "_corners.jpg"
-			cv2.imwrite(write_path, cal_img)
-			print("Saved corners for image ", str(idx))
-
-
-#load arbitrary image for size
-img  = cv2.imread('./camera_cal/calibration11.jpg')
-img_size = (img.shape[1], img.shape[0])
-
-#camera calibration coefficients
-ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, img_size, None, None)
-
-#save camera calibration results for later
-calibration = {}
-calibration['mtx'] = mtx
-calibration['dist'] = dist
-pickle.dump(calibration, open("./calibration.p", "wb"))
-print("Saved calibration file")
-```
 
 ```python
 def undistort_image(image):
@@ -270,7 +219,7 @@ Minv = cv2.getPerspectiveTransform(dst, src)
 
 ### Identifying lane line pixels and fitting a polynomial
 
-In order to identify lane pixels, I started by creating a historgram for the bottom half of the transformed image and found the midpoint of the lane by taking the average of the two peaks. Then I utilized a sliding window approach to determine the location of the lanes as you go further away form the car. Once I had the windows and lane centers, I drew two second-order polynomials on the image to indicate the lane lines. 
+In order to identify lane pixels, I started by creating a histogram for the bottom half of the transformed image and found the midpoint of the lane by taking the average of the two peaks. Then I utilized a sliding window approach to determine the location of the lanes as you go further away form the car. Once I had the windows and lane centers, I drew two second-order polynomials on the image to indicate the lane lines. 
 
 ![alt text][image10]
 
@@ -278,7 +227,7 @@ In order to identify lane pixels, I started by creating a historgram for the bot
 
 ```python
 def find_lanes(trans):
-	#create historgram for bottom half of trans
+	#create histogram for bottom half of trans
 	hist = np.sum(trans[trans.shape[0]/2:,:], axis=0) 
 	#output image to draw on + visualize
 	out_img = np.dstack((trans, trans, trans))*255
@@ -424,9 +373,12 @@ In `pipeline.py`, there are two functions defined. The first, `process_frame(ima
 ### Discussion
 The video pipeline did a great job of detecting lane lines. It also worked well on videos where lighting conditions varied, and on videos where multiple sharp turns happened in sequence. 
 
-Other improvments I'd like to make are: 
-* When doing color space thresholding, doing the thresholding on all 3 dimensions rather than just one.
-* Doing multi-frame smoothing so that the pipeline benefits from the knowledge it gained from previous frames.
+There are several improvements I still want to make to this pipeline: 
+* Making the pipeline more robust to changes in camera position by doing a transformation in the beginning that converts to a standard perspective. 
+* Doing multi-frame smoothing so that the pipeline benefits from the knowledge it gains from previous frames.
+* Doing color thresholding on all 3 color channels rather than just one.
+
+
 
 
 
