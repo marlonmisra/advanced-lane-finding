@@ -106,6 +106,22 @@ def mag_thresh(image, sobel_kernel=3, thresh=(1, 5)):
 
 	return mag_thresh
 
+def dir_thresh(image, sobel_kernel=3, thresh=(0, np.pi/2)):
+    gray = cv2. cvtColor(image, cv2.COLOR_RGB2GRAY)
+
+    sobelx = cv2.Sobel(gray, cv2.CV_64F, 1, 0 ,ksize = sobel_kernel)
+    sobely = cv2.Sobel(gray, cv2.CV_64F, 0, 1 ,ksize = sobel_kernel)
+
+    abs_sobelx = np.absolute(sobelx)
+    abs_sobely = np.absolute(sobely)
+
+    directions = np.arctan2(sobely, sobelx)
+
+    dir_threshold = np.zeros_like(directions)
+    dir_threshold[(directions > thresh[0]) & (directions < thresh[1])] = 1
+
+    return dir_threshold
+```
 
 **Color transforms**
 
