@@ -26,10 +26,11 @@ The goals/steps I'll explain in depth are:
 [image8]: ./readme_assets/windowed_images.png "Windowed images"
 [image9]: ./readme_assets/birdsview_images_no_label.png "Birdsview images no label"
 [image10]: ./readme_assets/birdsview_images.png "Birdsview images"
-[image11]: ./readme_assets/detections_no_label.png "Detections no label"
-[image12]: ./readme_assets/detections.png "Detections"
-[image13]: ./readme_assets/final_images_no_label.png "Final images no label"
-[image14]: ./readme_assets/video.gif "Video"
+[image11]: ./readme_assets/histograms.png "Histograms"
+[image12]: ./readme_assets/detections_no_label.png "Detections no label"
+[image13]: ./readme_assets/detections.png "Detections"
+[image14]: ./readme_assets/final_images_no_label.png "Final images no label"
+[image15]: ./readme_assets/video.gif "Video"
 
 
 ### Files and project navigation 
@@ -226,6 +227,8 @@ In order to identify lane pixels, I started by creating a histogram for the bott
 
 ![alt text][image11]
 
+![alt text][image12]
+
 ```python
 def find_lanes(trans):
 	#create histogram for bottom half of trans
@@ -334,9 +337,9 @@ def pos_from_center(trans, leftx_base, rightx_base):
 
 To get the final image, I warped the birds-view image back into the original space. And then I drew the lanes and filled the area in between using the `fillPoly` function. 
 
-![alt text][image12]
-
 ![alt text][image13]
+
+![alt text][image14]
 
 ```python
 def final_image(image, persp_transform_image, ploty, leftx_base, left_fit, left_fitx, rightx_base, right_fit, right_fitx, Minv):
@@ -369,7 +372,7 @@ def final_image(image, persp_transform_image, ploty, leftx_base, left_fit, left_
 ### Video pipeline
 In `pipeline.py`, there are two functions defined. The first, `process_frame(image)` applies the steps described above in sequence to a frame. The second function, `process_video(input_path, output_path)`, applies the processing function to each frame, and saves a video of the output file. 
 
-![alt text][image14]
+![alt text][image15]
 
 ### Discussion
 The video pipeline did a great job of detecting lane lines. It also worked well on videos where lighting conditions varied, and on videos where multiple sharp turns happened in sequence. 

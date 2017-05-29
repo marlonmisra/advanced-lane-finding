@@ -46,6 +46,7 @@ YCrCb_images = [YCrCb_thresh(undistorted_image, channel=YCrCb_thresh_channel, th
 combined_images = [combine_threshs(hls_thresh, abs_sobel_thresh) for hls_thresh, abs_sobel_thresh in zip(hls_thresh_images, abs_sobel_thresh_images)]
 windowed_images = [filterf(combined) for combined in combined_images]
 birds_view_images = [transform_image(windowed_image, M, img_size) for windowed_image in windowed_images]
+histogram_images = [get_hist(birds_view_image) for birds_view_image in birds_view_images]
 progress = [images, undistorted_images, abs_sobel_thresh_images, mag_thresh_images, dir_thresh_images, rgb_thresh_images, hls_thresh_images, hsv_thresh_images, YCrCb_images]
 
 
@@ -96,6 +97,11 @@ def plot_all(images = [], birds_view_images = [], option = 'transformation'):
 			ax.set_title(label)
 			ax.axis('off')
 
+	if option == 'histogram':
+		for ax, image, label in zip(axes, images[0:2], labels[0:2]):
+			ax.plot(image)
+			ax.set_title(label)
+
 	elif option == 'lanes':
 		for ax, birds_view_image, label in zip(axes, birds_view_images[:2], labels[:2]):
 			out_img, ploty, left_fit, left_fitx, leftx_base, right_fit, right_fitx, rightx_base = find_lanes(birds_view_image)
@@ -112,10 +118,10 @@ def plot_all(images = [], birds_view_images = [], option = 'transformation'):
 			ax.imshow(result)
 			ax.set_title(label)
 			ax.axis('off')
-	#plt.show()
-	plt.savefig('readme_assets/image.png', bbox_inches='tight', cmap='gray')
+	plt.show()
+	#plt.savefig('readme_assets/image.png', bbox_inches='tight', cmap='gray')
 
-#plot_all(images = birds_view_images, option = 'transformation') #plot transformations
+plot_all(images = histogram_images, option = 'histogram') #plot transformations
 #plot_all(images = images, birds_view_images = birds_view_images, option = 'lanes') #plot lane lines images
 #plot_all(images = images, birds_view_images = birds_view_images, option = 'final') #plot final images
 

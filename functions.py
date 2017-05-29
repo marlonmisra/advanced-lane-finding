@@ -159,6 +159,11 @@ def filterf(image):
 def transform_image(windowed_image, M, img_size):
 	return cv2.warpPerspective(windowed_image, M, img_size)
 
+def get_hist(img):
+	hist = np.sum(img[int(img.shape[0]//2):,:], axis=0)
+	#hist = np.sum(img[img.shape[0]/2:,:], axis=0)
+	return hist
+
 def find_lanes(trans):
 	#create historgram for bottom half of trans
 	hist = np.sum(trans[int(trans.shape[0]/2):,:], axis=0) 
