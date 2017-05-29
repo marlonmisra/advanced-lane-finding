@@ -69,7 +69,7 @@ Binary threshold images only have 2 types of pixels - pixels which make up what 
 
 **Edge detection**
 
-I made use of 3 different edge detection techniques - the absolute Sobel threshold, the magnitude Sobel threshold, and the directional Sobel threshold. For the absolute Sobel threshold, you can either use a kernel to detect changes in the X direction or Y direction. I found that the X direction works best because lane lines are most visible as you look at the image from left to right. The absolute Sobel operator works by moving a NxN filter across the image and computing the dot product between the filter and values of the image. Depending on the values of the filter, the dot product represents the gradient at that point in the image. For example, the Sobel X  and Sobel Y operators are defined as follows for a filter size of 3. 
+I made use of 3 different edge detection techniques - the absolute Sobel threshold, the magnitude Sobel threshold, and the directional Sobel threshold. For the absolute Sobel threshold, you I explored the Sobel X and Sobel Y operator. I found that the X direction works best because lane lines are most visible as you look at gradients from left to right. The absolute Sobel operator works by moving a NxN filter across the image and computing the dot product between the filter and the image values. This dot product represents the gradient at that point. The Sobel X  and Sobel Y operators are defined as follows for a filter size of 3. 
 
 ![alt text][image3]
 
@@ -205,7 +205,7 @@ def filterf(image):
 
 ### Perspective transform
 
-The perspective transform changes the image such that you get a bird's eye top-down view. This was a necesary step because it is much easier to determine lane curvate from this perspective. Before being able to apply a perspective transform, you need to define 4 source points and 4 destination points - knowledge of how each of these 4 points change lets you apply the OpenCV `cv2.warpPerspective` function. In order to get the source and destination I looked at a straight lane image, defined 4 points that make up the lane, and set the destination points in a way such that they make a rectangle. This has to be true because from a top-down view straight lanes should be parallel. The M parameter below defines the transformation to birds-view space and the Minv parameter defines the transformation back to the original space which we have to use later. 
+The perspective transform changes the image such that you get a bird's eye top-down view. This was a necesary step because it is much easier to determine lane curvature from this perspective. Before being able to apply a perspective transform, you need to define 4 source points and 4 destination points - knowledge of how each of these 4 points change lets you apply the OpenCV `cv2.warpPerspective` function. In order to get the source and destination I looked at a straight lane image, defined 4 points that make up the lane, and set the destination points in a way such that they make a rectangle. This has to be true because from a top-down view straight lanes should be parallel. The `M` parameter below defines the transformation to birds-view space and the `Minv` parameter defines the transformation back to the original space which we have to use later. 
 
 ```python
 src = np.float32([(257, 685), (1050, 685), (583, 460),(702, 460)])
@@ -376,6 +376,7 @@ The video pipeline did a great job of detecting lane lines. It also worked well 
 
 There are several improvements I still want to make to this pipeline: 
 * Making the pipeline more robust to changes in camera position by doing a transformation in the beginning that converts to a standard perspective. 
+* Doing data augmentation by doing random shifting, rotating, and color changes. 
 * Doing multi-frame smoothing so that the pipeline benefits from the knowledge it gains from previous frames.
 * Doing color thresholding on all 3 color channels rather than just one.
 
