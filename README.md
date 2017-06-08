@@ -171,7 +171,7 @@ def combine_threshs(hls_thresh_1, abs_sobel_thresh_1):
 
 ### Region of interest
 
-Up until this point, the goal of the binary thresholding was more focused on identifying pixels that belonged to lane markings rather than minimizing false positives. One way to effectively reduce false positives is to apply a region of interest mask that sets all pixels outside of it to 0. These are pixels on the far left and right and near the top where the sky is. The region of interest area looks like a trapezoid and is defined below. 
+Until now, the goal of binary thresholding was focused on clearly identifying the lanes and less focused on removing noise. To efficiently remove false positives near the edges of the image(top, sides, etc.), we're now applying a region of interest mask that sets all pixels outside of the defined area to 0. These are pixels on the far left and right and near the top where the sky is. The region of interest area looks like a trapezoid and is defined below. 
 
 ![alt text][image6]
 
